@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { AREAS, TAKE_IDEAS } from './data'
 import { firstName, PROVIDERS, signIn, type Provider } from './auth'
-import { chime, thud, tick } from './feel'
+import { chime, reducedMotion, thud, tick } from './feel'
 import { Pick } from './Pick'
 import { Ticket } from './Ticket'
 import { nextSession, sessionIcs } from './session-time'
@@ -115,16 +115,22 @@ const GLYPH: Record<Provider, React.ReactNode> = {
 
 function Welcome({ onSignedIn }: { onSignedIn: (id: Awaited<ReturnType<typeof signIn>>) => void }) {
   const [busy, setBusy] = useState<Provider | null>(null)
+  const [leaving, setLeaving] = useState(false)
   const go = async (id: Provider) => {
     if (busy) return
     tick()
     setBusy(id)
     const who = await signIn(id)
     chime()
+    if (!reducedMotion()) {
+      setLeaving(true)
+      await new Promise((r) => setTimeout(r, 320))
+    }
     onSignedIn(who)
   }
   return (
-    <div className="ob-q ob-welcome">
+    <div className={`ob-q ob-welcome${leaving ? ' leaving' : ''}`}>
+      <div className="meet" aria-hidden="true"><i /><i /><b /></div>
       <p className="wm big" aria-label="Pàdé">P<i>à</i>d<i>é</i></p>
       <h1 className="ob-h" tabIndex={-1}>Meet someone new, five minutes at a time.</h1>
       <p className="ob-hint">Fridays, 9 to 10pm, in Lagos. Your first Friday is free.</p>

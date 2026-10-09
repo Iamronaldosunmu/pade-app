@@ -200,3 +200,31 @@
 .ob-back span { font-size: 20px; line-height: 1; }
 .ob-back:hover { color: var(--ink); }
 .ob-back:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+
+/* Welcome motion: transform and opacity only. Entrance in sequence, two dots that meet, fade out on sign-in. */
+.ob-stage:has(.ob-welcome) { animation: none; }
+.ob-welcome { position: relative; }
+.ob-welcome > :not(.meet) { animation: rise 0.6s var(--ease) both; }
+.ob-welcome > .wm { animation-delay: 0.05s; }
+.ob-welcome > .ob-h { animation-delay: 0.15s; }
+.ob-welcome > .ob-hint { animation-delay: 0.25s; }
+.ob-welcome > .ob-auth { animation-delay: 0.35s; }
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+.ob-welcome .wm i { display: inline-block; animation: accent 0.5s var(--ease) 0.6s both; }
+.ob-welcome .wm i:last-of-type { animation-delay: 0.7s; }
+@keyframes accent { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+.meet { position: absolute; left: 50%; top: -40px; width: 10px; height: 10px; translate: -50% 0; pointer-events: none; }
+.meet i, .meet b { position: absolute; inset: 0; border-radius: 50%; }
+.meet i { background: var(--gold); opacity: 0; animation: meetL 4.5s var(--ease) 1.2s infinite; }
+.meet i:nth-child(2) { animation-name: meetR; }
+.meet b { border: 2px solid var(--gold); opacity: 0; animation: ring 4.5s ease-out 1.2s infinite; }
+@keyframes meetL { 0% { opacity: 0; transform: translateX(-70px); } 15% { opacity: 1; } 40%, 52% { opacity: 1; transform: none; } 75%, 100% { opacity: 0; transform: translateX(-70px); } }
+@keyframes meetR { 0% { opacity: 0; transform: translateX(70px); } 15% { opacity: 1; } 40%, 52% { opacity: 1; transform: none; } 75%, 100% { opacity: 0; transform: translateX(70px); } }
+@keyframes ring { 0%, 40% { opacity: 0; transform: scale(1); } 42% { opacity: 0.8; } 62%, 100% { opacity: 0; transform: scale(4.5); } }
+.ob-welcome.leaving { animation: leave 0.32s ease-in both; }
+@keyframes leave { to { opacity: 0; transform: translateY(-10px); } }
+@media (prefers-reduced-motion: reduce) {
+  .ob-welcome > :not(.meet), .ob-welcome .wm i { animation: none; }
+  .meet { display: none; }
+  .ob-welcome.leaving { animation: none; }
+}
