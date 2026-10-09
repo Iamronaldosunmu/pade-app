@@ -212,5 +212,6 @@
 .ob-back:active { transform: scale(0.96); }
 .ob-back:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
 @media (min-width: 900px) {
-  .ob-top { position: fixed; left: 24px; top: 24px; min-height: 0; padding: 0; z-index: 6; }
+  /* top-left corner of the right-hand pane: the grid is 1.05fr / 1fr, so the pane starts at 1.05/2.05 of the width */
+  .ob-top { position: absolute; left: calc(51.2195% + 24px); top: 24px; min-height: 0; padding: 0; z-index: 6; }
 }
