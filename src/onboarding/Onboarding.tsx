@@ -130,7 +130,6 @@ function Welcome({ onSignedIn }: { onSignedIn: (id: Awaited<ReturnType<typeof si
   }
   return (
     <div className={`ob-q ob-welcome${leaving ? ' leaving' : ''}`}>
-      <div className="meet" aria-hidden="true"><i /><i /><b /></div>
       <p className="wm big" aria-label="Pàdé">P<i>à</i>d<i>é</i></p>
       <h1 className="ob-h" tabIndex={-1}>Meet someone new, five minutes at a time.</h1>
       <p className="ob-hint">Fridays, 9 to 10pm, in Lagos. Your first Friday is free.</p>
