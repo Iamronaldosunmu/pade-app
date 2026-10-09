@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { AREAS, TAKE_IDEAS } from './data'
 import { firstName, PROVIDERS, signIn, type Provider } from './auth'
-import { chime, setSound, soundOn, thud, tick } from './feel'
+import { chime, thud, tick } from './feel'
 import { Pick } from './Pick'
 import { Ticket } from './Ticket'
 import { nextSession, sessionIcs } from './session-time'
@@ -16,7 +16,6 @@ const SHOW_TICKET: StepId[] = ['name', 'age', 'area', 'you', 'takes', 'photo']
 export function Onboarding({ onPractice }: { onPractice: () => void }) {
   const [i, setI] = useState(0)
   const [p, setP] = useState<Profile>(emptyProfile)
-  const [sound, setSoundState] = useState(soundOn())
   const when = useState(() => nextSession(new Date()))[0]
   const step = STEPS[i]
   const set = (patch: Partial<Profile>) => setP((x) => ({ ...x, ...patch }))
@@ -42,9 +41,7 @@ export function Onboarding({ onPractice }: { onPractice: () => void }) {
       <div className="ob-main">
         <header className="ob-top">
           <button className="ob-back" onClick={back} aria-label="Back" style={{ visibility: i === 0 ? 'hidden' : 'visible' }}>←</button>
-          <button className="ob-sound" aria-pressed={sound} onClick={() => { setSound(!sound); setSoundState(!sound); if (!sound) tick() }}>
-            Sound {sound ? 'on' : 'off'}
-          </button>
+          <span />
         </header>
         {SHOW_TICKET.includes(step) && (
           <div className="ob-ticket"><Ticket profile={p} when={when} enter={step === 'name'} /></div>
