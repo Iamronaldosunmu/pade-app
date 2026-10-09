@@ -135,7 +135,7 @@ export function SessionScreen({ seed, speed, onExit }: { seed: number; speed: nu
               <p>No hard feelings. On to the next person.</p>
             </>
           )}
-          <div className="row"><button className="solid" onClick={onExit}>Back to lobby</button></div>
+          <div className="row"><button className="solid" onClick={onExit}>Back to my ticket</button></div>
         </section>
       )}
     </main>

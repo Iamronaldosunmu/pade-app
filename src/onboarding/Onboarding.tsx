@@ -14,7 +14,7 @@ const STEPS: StepId[] = ['welcome', 'name', 'age', 'area', 'you', 'table', 'take
 const SAMPLE: Profile = { ...emptyProfile, name: 'Tomi', age: 27, area: 'Island', you: ['Funny', 'Curious', 'Creative'], takes: ['Jollof is better when it is a little burnt.'], hasPhoto: true }
 const SHOW_TICKET: StepId[] = ['name', 'age', 'area', 'you', 'takes', 'photo']
 
-export function Onboarding({ onDone, onExit }: { onDone: (p: Profile) => void; onExit: () => void }) {
+export function Onboarding({ onPractice }: { onPractice: () => void }) {
   const [i, setI] = useState(0)
   const [p, setP] = useState<Profile>(emptyProfile)
   const [sound, setSoundState] = useState(soundOn())
@@ -22,7 +22,7 @@ export function Onboarding({ onDone, onExit }: { onDone: (p: Profile) => void; o
   const step = STEPS[i]
   const set = (patch: Partial<Profile>) => setP((x) => ({ ...x, ...patch }))
   const next = () => { setI((n) => Math.min(n + 1, STEPS.length - 1)) }
-  const back = () => (i === 0 ? onExit() : setI(i - 1))
+  const back = () => setI((n) => Math.max(0, n - 1))
   const stage = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -40,7 +40,7 @@ export function Onboarding({ onDone, onExit }: { onDone: (p: Profile) => void; o
       </aside>
       <div className="ob-main">
         <header className="ob-top">
-          <button className="ob-back" onClick={back} aria-label={i === 0 ? 'Leave' : 'Back'}>←</button>
+          <button className="ob-back" onClick={back} aria-label="Back" style={{ visibility: i === 0 ? 'hidden' : 'visible' }}>←</button>
           <button className="ob-sound" aria-pressed={sound} onClick={() => { setSound(!sound); setSoundState(!sound); if (!sound) tick() }}>
             Sound {sound ? 'on' : 'off'}
           </button>
@@ -67,7 +67,7 @@ export function Onboarding({ onDone, onExit }: { onDone: (p: Profile) => void; o
         {step === 'contact' && <Contact p={p} onNext={(patch) => { set(patch); next() }} />}
         {step === 'photo' && <Photo has={p.hasPhoto} onNext={(hasPhoto) => { set({ hasPhoto }); next() }} />}
         {step === 'buzzer' && <Buzzer onNext={next} />}
-        {step === 'ticket' && <Final p={p} when={when} onDone={() => onDone(p)} />}
+        {step === 'ticket' && <Final p={p} when={when} onPractice={onPractice} />}
         </div>
       </div>
     </div>
@@ -296,7 +296,7 @@ function Buzzer({ onNext }: { onNext: () => void }) {
   )
 }
 
-function Final({ p, when, onDone }: { p: Profile; when: Date; onDone: () => void }) {
+function Final({ p, when, onPractice }: { p: Profile; when: Date; onPractice: () => void }) {
   useEffect(() => { thud() }, [])
   const addCal = () => {
     const blob = new Blob([sessionIcs(when)], { type: 'text/calendar' })
@@ -312,7 +312,7 @@ function Final({ p, when, onDone }: { p: Profile; when: Date; onDone: () => void
       <Ticket profile={p} when={when} full printed />
       <div className="ob-foot">
         <button className="ob-next" data-autofocus onClick={addCal}>Add to calendar</button>
-        <button className="ob-link" onClick={onDone}>Done</button>
+        <button className="ob-link" onClick={onPractice}>Try a practice call</button>
       </div>
     </div>
   )
