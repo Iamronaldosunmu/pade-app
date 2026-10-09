@@ -141,7 +141,6 @@ function Welcome({ onSignedIn }: { onSignedIn: (id: Awaited<ReturnType<typeof si
           </button>
         ))}
       </div>
-      <p className="ob-fine" role="status">{busy ? 'Taking you to a quick ticket form.' : 'New or returning, same buttons. You must be 18 or over. We never post for you.'}</p>
     </div>
   )
 }
