@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { AREAS, TAKE_IDEAS } from './data'
+import { firstName, PROVIDERS, signIn, type Provider } from './auth'
 import { chime, setSound, soundOn, thud, tick } from './feel'
 import { Pick } from './Pick'
 import { Ticket } from './Ticket'
@@ -8,8 +9,8 @@ import { emptyProfile, type Profile } from './types'
 import { cleanHandle, cleanName, formatPhone, isAdult, normalizePhone, parseAge, validHandle, validName } from './validate'
 import './onboarding.css'
 
-type StepId = 'welcome' | 'phone' | 'code' | 'name' | 'age' | 'area' | 'you' | 'table' | 'takes' | 'contact' | 'photo' | 'buzzer' | 'ticket'
-const STEPS: StepId[] = ['welcome', 'phone', 'code', 'name', 'age', 'area', 'you', 'table', 'takes', 'contact', 'photo', 'buzzer', 'ticket']
+type StepId = 'welcome' | 'name' | 'age' | 'area' | 'you' | 'table' | 'takes' | 'contact' | 'photo' | 'buzzer' | 'ticket'
+const STEPS: StepId[] = ['welcome', 'name', 'age', 'area', 'you', 'table', 'takes', 'contact', 'photo', 'buzzer', 'ticket']
 const SHOW_TICKET: StepId[] = ['name', 'age', 'area', 'you', 'takes', 'photo']
 
 export function Onboarding({ onDone, onExit }: { onDone: (p: Profile) => void; onExit: () => void }) {
@@ -42,10 +43,8 @@ export function Onboarding({ onDone, onExit }: { onDone: (p: Profile) => void; o
         <div className="ob-ticket"><Ticket profile={p} when={when} /></div>
       )}
       <div className="ob-stage" ref={stage} key={step}>
-        {step === 'welcome' && <Welcome onNext={next} />}
-        {step === 'phone' && <Phone value={p.phone} onNext={(v) => { set({ phone: v }); next() }} />}
-        {step === 'code' && <Code phone={p.phone} onNext={next} />}
-        {step === 'name' && <Name value={p.name} onNext={(v) => { set({ name: v }); next() }} />}
+        {step === 'welcome' && <Welcome onSignedIn={(id) => { set({ provider: id.provider, name: firstName(id.name), instagram: id.provider === 'instagram' ? id.handle : '' }); next() }} />}
+        {step === 'name' && <Name provider={p.provider} value={p.name} onNext={(v) => { set({ name: v }); next() }} />}
         {step === 'age' && <Age value={p.age} onNext={(v) => { set({ age: v }); next() }} />}
         {step === 'area' && <Area value={p.area} onNext={(v) => { set({ area: v }); next() }} />}
         {step === 'you' && (
@@ -97,65 +96,53 @@ function Q({ title, hint, ok, onNext, children }: { title: string; hint?: string
   )
 }
 
-function Welcome({ onNext }: { onNext: () => void }) {
+const GLYPH: Record<Provider, React.ReactNode> = {
+  google: <span className="gl-g" aria-hidden="true">G</span>,
+  instagram: (
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+      <rect x="3" y="3" width="18" height="18" rx="5.5" /><circle cx="12" cy="12" r="4.2" /><circle cx="17.3" cy="6.7" r="1" fill="currentColor" stroke="none" />
+    </svg>
+  ),
+  x: (
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+      <path d="M17.8 3h3.1l-6.8 7.7L22 21h-6.2l-4.9-6.3L5.3 21H2.2l7.3-8.3L2 3h6.4l4.4 5.8L17.8 3zm-1.1 16.2h1.7L7.4 4.7H5.6l11.1 14.5z" />
+    </svg>
+  ),
+}
+
+function Welcome({ onSignedIn }: { onSignedIn: (id: Awaited<ReturnType<typeof signIn>>) => void }) {
+  const [busy, setBusy] = useState<Provider | null>(null)
+  const go = async (id: Provider) => {
+    if (busy) return
+    tick()
+    setBusy(id)
+    const who = await signIn(id)
+    chime()
+    onSignedIn(who)
+  }
   return (
     <div className="ob-q ob-welcome">
       <p className="wm big" aria-label="Pàdé">P<i>à</i>d<i>é</i></p>
       <h1 className="ob-h" tabIndex={-1}>Meet someone new, five minutes at a time.</h1>
-      <p className="ob-hint">Fridays, 9 to 10pm. Takes about two minutes to get your ticket.</p>
-      <div className="ob-foot"><button className="ob-next" data-autofocus onClick={() => { chime(); onNext() }}>Get my ticket</button></div>
-    </div>
-  )
-}
-
-function Phone({ value, onNext }: { value: string; onNext: (v: string) => void }) {
-  const [v, setV] = useState(value ? formatPhone(value) : '')
-  const n = normalizePhone(v)
-  const [shown, setShown] = useState(false)
-  return (
-    <form className="ob-q" onSubmit={(e) => { e.preventDefault(); setShown(true); if (n) { chime(); onNext(n) } }}>
-      <Head title="What is your number?" hint="We text you a code. Nobody else sees it." />
-      <label className="sr" htmlFor="ph">Phone number</label>
-      <div className="ob-field big">
-        <span aria-hidden="true">+234</span>
-        <input id="ph" data-autofocus type="tel" inputMode="tel" autoComplete="tel-national" placeholder="801 234 5678" value={v} onChange={(e) => setV(e.target.value)} aria-invalid={shown && !n} aria-describedby={shown && !n ? 'ph-err' : undefined} />
-      </div>
-      {shown && !n && <p className="ob-err" id="ph-err" role="alert">That does not look like a Nigerian mobile number.</p>}
-      <Foot ok={!!n} />
-    </form>
-  )
-}
-
-function Code({ phone, onNext }: { phone: string; onNext: () => void }) {
-  const [v, setV] = useState('')
-  const [left, setLeft] = useState(30)
-  useEffect(() => {
-    if (left <= 0) return
-    const t = setTimeout(() => setLeft((l) => l - 1), 1000)
-    return () => clearTimeout(t)
-  }, [left])
-  useEffect(() => {
-    if (v.length === 6) { chime(); const t = setTimeout(onNext, 380); return () => clearTimeout(t) }
-  }, [v, onNext])
-  return (
-    <div className="ob-q">
-      <Head title="Enter the code." hint={`We sent six digits to ${formatPhone(phone)}. Prototype: any six digits work.`} />
-      <label className="sr" htmlFor="code">Six digit code</label>
-      <div className="ob-code" onClick={() => document.getElementById('code')?.focus()}>
-        {Array.from({ length: 6 }, (_, k) => (
-          <span key={k} className={`cell${k === v.length ? ' cur' : ''}${v[k] ? ' on' : ''}`} aria-hidden="true">{v[k] ?? ''}</span>
+      <p className="ob-hint">Fridays, 9 to 10pm, in Lagos. Your first Friday is free.</p>
+      <div className="ob-auth" role="group" aria-label="Sign up or sign in" aria-busy={busy !== null}>
+        {PROVIDERS.map((pr, k) => (
+          <button key={pr.id} className={`auth-btn${busy === pr.id ? ' busy' : ''}`} data-autofocus={k === 0 ? '' : undefined} aria-disabled={busy !== null && busy !== pr.id} onClick={() => go(pr.id)}>
+            <span className="auth-glyph">{GLYPH[pr.id]}</span>
+            <span className="auth-label">{busy === pr.id ? 'Connecting…' : `Continue with ${pr.label}`}</span>
+            {busy === pr.id && <span className="auth-spin" aria-hidden="true" />}
+          </button>
         ))}
-        <input id="code" data-autofocus inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={v} onChange={(e) => { const d = e.target.value.replace(/\D/g, '').slice(0, 6); if (d.length > v.length) tick(); setV(d) }} />
       </div>
-      <button className="ob-link" disabled={left > 0} onClick={() => setLeft(30)}>{left > 0 ? `Resend in ${left}s` : 'Send a new code'}</button>
+      <p className="ob-fine" role="status">{busy ? 'Taking you to a quick ticket form.' : 'New or returning, same buttons. You must be 18 or over. We never post for you.'}</p>
     </div>
   )
 }
 
-function Name({ value, onNext }: { value: string; onNext: (v: string) => void }) {
+function Name({ provider, value, onNext }: { provider: Provider | null; value: string; onNext: (v: string) => void }) {
   const [v, setV] = useState(value)
   return (
-    <Q title="What should we call you?" hint="First name or a nickname. This is what people see." ok={validName(v)} onNext={() => onNext(cleanName(v))}>
+    <Q title="What should we call you?" hint={provider ? `You are in. We took this from ${PROVIDERS.find((x) => x.id === provider)?.label}. Change it if you like. It is what people see.` : 'First name or a nickname. This is what people see.'} ok={validName(v)} onNext={() => onNext(cleanName(v))}>
       <label className="sr" htmlFor="nm">Name</label>
       <input id="nm" className="ob-input big" data-autofocus autoComplete="given-name" maxLength={24} value={v} onChange={(e) => setV(e.target.value)} />
     </Q>
@@ -214,23 +201,29 @@ function Takes({ value, onNext }: { value: string[]; onNext: (v: string[]) => vo
 function Contact({ p, onNext }: { p: Profile; onNext: (patch: Partial<Profile>) => void }) {
   const [kind, setKind] = useState(p.contactKind)
   const [h, setH] = useState(p.instagram)
+  const [ph, setPh] = useState(p.phone ? formatPhone(p.phone) : '')
   const handle = cleanHandle(h)
-  const ok = kind === 'whatsapp' || validHandle(handle)
+  const num = normalizePhone(ph)
+  const ok = kind === 'whatsapp' ? !!num : validHandle(handle)
   return (
-    <Q title="How should a match reach you?" hint="Shared only if you both stay past five minutes." ok={ok} onNext={() => onNext({ contactKind: kind, instagram: kind === 'instagram' ? handle : '' })}>
+    <Q title="How should a match reach you?" hint="Shared only if you both stay past five minutes." ok={ok} onNext={() => onNext(kind === 'whatsapp' ? { contactKind: kind, phone: num ?? '' } : { contactKind: kind, instagram: handle })}>
       <div className="seg" role="radiogroup" aria-label="Contact">
         <span className="seg-pill" style={{ transform: `translateX(${kind === 'whatsapp' ? 0 : 100}%)` }} />
         <button type="button" role="radio" aria-checked={kind === 'whatsapp'} onClick={() => { tick(); setKind('whatsapp') }}>WhatsApp</button>
         <button type="button" role="radio" aria-checked={kind === 'instagram'} onClick={() => { tick(); setKind('instagram') }}>Instagram</button>
       </div>
-      {kind === 'whatsapp'
-        ? <p className="ob-hint pad">We will use {formatPhone(p.phone)}.</p>
-        : (
-          <>
-            <label className="sr" htmlFor="ig">Instagram handle</label>
-            <div className="ob-field"><span aria-hidden="true">@</span><input id="ig" data-autofocus autoCapitalize="none" autoCorrect="off" value={h.replace(/^@/, '')} onChange={(e) => setH(e.target.value)} /></div>
-          </>
-        )}
+      {kind === 'whatsapp' ? (
+        <>
+          <label className="sr" htmlFor="ph">WhatsApp number</label>
+          <div className="ob-field big"><span aria-hidden="true">+234</span><input id="ph" data-autofocus type="tel" inputMode="tel" autoComplete="tel-national" placeholder="801 234 5678" value={ph} onChange={(e) => setPh(e.target.value)} /></div>
+          <p className="ob-hint">Only the person you both choose to keep talking to sees it.</p>
+        </>
+      ) : (
+        <>
+          <label className="sr" htmlFor="ig">Instagram handle</label>
+          <div className="ob-field"><span aria-hidden="true">@</span><input id="ig" data-autofocus autoCapitalize="none" autoCorrect="off" value={h.replace(/^@/, '')} onChange={(e) => setH(e.target.value)} /></div>
+        </>
+      )}
     </Q>
   )
 }

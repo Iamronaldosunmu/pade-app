@@ -13,7 +13,7 @@ const SPEEDS = [
 export default function App() {
   const [round, setRound] = useState<{ seed: number; speed: number } | null>(null)
   const [speed, setSpeed] = useState(10)
-  const [joining, setJoining] = useState(false)
+  const [joining, setJoining] = useState(true)
   const [me, setMe] = useState<Profile | null>(null)
 
   if (round) return <SessionScreen key={round.seed} seed={round.seed} speed={round.speed} onExit={() => setRound(null)} />

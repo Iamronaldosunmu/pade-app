@@ -1,7 +1,10 @@
+import type { Provider } from './auth'
+
 export type ContactKind = 'whatsapp' | 'instagram'
 
 export interface Profile {
-  /** E.164, e.g. +2348012345678 */
+  provider: Provider | null
+  /** E.164, e.g. +2348012345678. Only asked for when someone picks WhatsApp. */
   phone: string
   name: string
   age: number | null
@@ -18,6 +21,7 @@ export interface Profile {
 }
 
 export const emptyProfile: Profile = {
+  provider: null,
   phone: '',
   name: '',
   age: null,
