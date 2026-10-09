@@ -111,9 +111,32 @@
   .ob-aside .ticket { zoom: 1.45; max-width: 400px; transform: rotate(-3deg); }
   .ob-aside .ticket.full { transform: rotate(-3deg); }
   .ob-aside-note { color: var(--ink-muted); font: 500 14px var(--time); letter-spacing: 0.02em; }
-  .ob-main { width: min(480px, 100%); margin: 0 auto; padding: 0 24px calc(24px + env(safe-area-inset-bottom)); overflow-y: auto; }
+  .ob-main { width: min(680px, 100%); margin: 0 auto; padding: 0 56px calc(24px + env(safe-area-inset-bottom)); overflow-y: auto; }
+  .ob-q { gap: 22px; }
+  .ob-hint { font-size: 19px; max-width: 46ch; }
+  .ob-next { min-height: 64px; font-size: 20px; }
+  .auth-btn { min-height: 68px; font-size: 20px; }
+  .ob-opts button { min-height: 68px; font-size: 21px; }
+  .chips-pick button { min-height: 48px; font-size: 17px; padding: 0 20px; }
+  .slot { min-height: 60px; font-size: 18px; }
+  .ob-input.take { font-size: 24px; }
+  .practice { width: 300px; }
+  .envelope { width: 340px; }
   .ob-ticket { display: none; }
   .ob-final .ticket { display: none; }
   .ob-stage { padding-block: 24px; }
-  .ob-h { font-size: 48px; }
+  .ob-h { font-size: 56px; }
+  .wm.big { font-size: 80px; }
+}
+@media (min-width: 900px) {
+  .ob-welcome { align-items: stretch; }
+  .ob-stage { justify-content: safe center; }
+  .ob-code, .ob-field, .seg, .ob-opts, .pick, .plate { width: 100%; }
+  .ob-foot .ob-link { align-self: center; }
+}
+@media (min-width: 900px) and (max-width: 1199px) {
+  .ob-aside { padding: 32px; }
+  .ob-aside .ticket { zoom: 1.05; max-width: none; }
+  .ob-main { padding-inline: 40px; }
+  .ob-h { font-size: 44px; }
 }
