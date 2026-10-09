@@ -11,7 +11,6 @@ import './onboarding.css'
 
 type StepId = 'welcome' | 'name' | 'age' | 'area' | 'you' | 'table' | 'takes' | 'contact' | 'photo' | 'buzzer' | 'ticket'
 const STEPS: StepId[] = ['welcome', 'name', 'age', 'area', 'you', 'table', 'takes', 'contact', 'photo', 'buzzer', 'ticket']
-const SAMPLE: Profile = { ...emptyProfile, name: 'Tomi', age: 27, area: 'Island', you: ['Funny', 'Curious', 'Creative'], takes: ['Jollof is better when it is a little burnt.'], hasPhoto: true }
 const SHOW_TICKET: StepId[] = ['name', 'age', 'area', 'you', 'takes', 'photo']
 
 export function Onboarding({ onPractice }: { onPractice: () => void }) {
@@ -30,14 +29,16 @@ export function Onboarding({ onPractice }: { onPractice: () => void }) {
   }, [step])
 
   return (
-    <div className="ob">
+    <div className={`ob${step === 'welcome' ? ' solo' : ''}`}>
       <div className="ob-bar" role="progressbar" aria-label="Progress" aria-valuemin={0} aria-valuemax={STEPS.length - 1} aria-valuenow={i}>
         <span style={{ transform: `scaleX(${i / (STEPS.length - 1)})` }} />
       </div>
-      <aside className="ob-aside" aria-hidden="true">
-        <Ticket profile={step === 'welcome' ? SAMPLE : p} when={when} full printed={step === 'ticket'} />
-        <p className="ob-aside-note">{step === 'welcome' ? 'A sample ticket. Yours fills in as you answer.' : 'Your ticket, as people will see it.'}</p>
-      </aside>
+      {step !== 'welcome' && (
+        <aside className="ob-aside" aria-hidden="true">
+          <Ticket profile={p} when={when} full enter printed={step === 'ticket'} />
+          <p className="ob-aside-note">Your ticket, as people will see it.</p>
+        </aside>
+      )}
       <div className="ob-main">
         <header className="ob-top">
           <button className="ob-back" onClick={back} aria-label="Back" style={{ visibility: i === 0 ? 'hidden' : 'visible' }}>←</button>
@@ -46,7 +47,7 @@ export function Onboarding({ onPractice }: { onPractice: () => void }) {
           </button>
         </header>
         {SHOW_TICKET.includes(step) && (
-          <div className="ob-ticket"><Ticket profile={p} when={when} /></div>
+          <div className="ob-ticket"><Ticket profile={p} when={when} enter={step === 'name'} /></div>
         )}
         <div className="ob-stage" ref={stage} key={step}>
           {step === 'welcome' && <Welcome onSignedIn={(id) => { set({ provider: id.provider, name: firstName(id.name), instagram: id.provider === 'instagram' ? id.handle : '' }); next() }} />}

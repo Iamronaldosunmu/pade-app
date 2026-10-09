@@ -3,7 +3,7 @@ import type { Profile } from './types'
 import { sessionLabel } from './session-time'
 
 /** The Friday ticket: it fills in as the person answers, and is the thing they keep. */
-export function Ticket({ profile, when, full, printed }: { profile: Profile; when: Date; full?: boolean; printed?: boolean }) {
+export function Ticket({ profile, when, full, printed, enter }: { profile: Profile; when: Date; full?: boolean; printed?: boolean; enter?: boolean }) {
   const ref = useRef<HTMLDivElement>(null)
   const tilt = (e: React.PointerEvent) => {
     const el = ref.current
@@ -15,7 +15,7 @@ export function Ticket({ profile, when, full, printed }: { profile: Profile; whe
   }
   const reset = () => { if (ref.current) ref.current.style.transform = '' }
   return (
-    <div className={`ticket${full ? ' full' : ''}${printed ? ' printed' : ''}`} ref={ref} onPointerMove={tilt} onPointerLeave={reset}>
+    <div className={`ticket${full ? ' full' : ''}${printed ? ' printed' : ''}${enter ? ' enter' : ''}`} ref={ref} onPointerMove={tilt} onPointerLeave={reset}>
       <div className="tk-main">
         <p className="tk-kicker">Pàdé · admit one</p>
         <p className="tk-name">{profile.name || <span className="tk-ph">Your name</span>}</p>

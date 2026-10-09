@@ -159,3 +159,9 @@
   .ob-input.narrow { margin-inline: auto; display: block; }
   .ob-err, .ob-why { text-align: center; }
 }
+.ticket.enter { animation: print 0.9s var(--ease) both; }
+@media (min-width: 900px) {
+  .ob.solo { grid-template-columns: 1fr; }
+  .ob-aside { animation: asideIn 0.8s var(--ease) both; }
+}
+@keyframes asideIn { from { opacity: 0; } }
