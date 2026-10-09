@@ -212,6 +212,5 @@
 .ob-back:active { transform: scale(0.96); }
 .ob-back:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
 @media (min-width: 900px) {
-  .ob-main { position: relative; }
-  .ob-top { position: absolute; left: 32px; top: 24px; min-height: 0; padding: 0; z-index: 2; }
+  .ob-top { position: fixed; left: 24px; top: 24px; min-height: 0; padding: 0; z-index: 6; }
 }
