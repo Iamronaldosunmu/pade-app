@@ -205,3 +205,8 @@
 .ob-welcome.leaving { animation: leave 0.32s ease-in both; }
 @keyframes leave { to { opacity: 0; transform: translateY(-10px); } }
 @media (prefers-reduced-motion: reduce) { .ob-welcome.leaving { animation: none; } }
+
+/* Welcome buttons: icon and label centered together */
+.ob-welcome .auth-btn { justify-content: center; gap: 12px; padding: 0 48px; }
+.ob-welcome .auth-btn .auth-glyph { position: static; }
+.ob-welcome .auth-btn .auth-label { flex: none; }
