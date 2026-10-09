@@ -166,21 +166,27 @@
 }
 @keyframes asideIn { from { opacity: 0; } }
 
-/* Welcome: Night Gold, large */
-.ob.solo { background: radial-gradient(ellipse 900px 520px at 50% 0%, rgba(255, 194, 74, 0.1), transparent 70%); }
-.ob-welcome { align-items: center; text-align: center; gap: 22px; }
-.ob-welcome .wm.big { font-size: 80px; line-height: 0.9; }
-.ob-welcome .ob-h { font-size: clamp(36px, 10vw, 48px); line-height: 1.02; letter-spacing: -0.04em; max-width: 760px; text-wrap: balance; }
-.ob-welcome .ob-hint { font-size: 17px; margin-inline: auto; }
-.ob-welcome .ob-auth { width: min(440px, 100%); gap: 12px; margin-top: 12px; }
-.ob-welcome .auth-btn { min-height: 64px; border-radius: 999px; font-size: 18px; justify-content: center; padding: 0 24px; }
+/* Welcome: Night Gold. One type scale (16px base, 1.333 ratio), 8px spacing grid, 56px touch targets. */
+.ob-welcome { --t0: 16px; --t1: 21px; --t3: 38px; --t4: 51px; --t5: 67px; align-items: center; text-align: center; gap: 24px; }
+.app-onb:has(.ob.solo) { background: radial-gradient(ellipse 900px 520px at 50% 0%, rgba(255, 194, 74, 0.1), transparent 70%); }
+.ob-welcome .wm.big { font-size: 56px; line-height: 0.9; }
+.ob-welcome .ob-h { font-size: clamp(28px, 8.6vw, var(--t3)); line-height: 1.08; max-width: 24ch; text-wrap: balance; }
+.ob-welcome .ob-hint { font-size: var(--t0); line-height: 1.5; max-width: 34ch; margin-inline: auto; text-wrap: balance; }
+.ob-welcome .ob-auth { width: min(360px, 100%); gap: 12px; margin-top: 8px; }
+.ob-welcome .auth-btn { min-height: 56px; border-radius: 999px; font-size: 17px; justify-content: flex-start; padding: 0 22px 0 58px; }
 .ob-welcome .auth-btn .auth-label { flex: none; }
-.ob-welcome .auth-btn .auth-glyph { position: absolute; left: 26px; }
-.ob-welcome .auth-btn .auth-spin { position: absolute; right: 26px; }
+.ob-welcome .auth-btn .auth-glyph { position: absolute; left: 22px; width: 24px; }
+.ob-welcome .auth-btn .auth-glyph svg { width: 20px; height: 20px; }
+.ob-welcome .gl-g { font-size: 20px; }
+.ob-welcome .auth-btn .auth-spin { position: absolute; right: 22px; }
 @media (min-width: 900px) {
-  .ob-welcome { gap: 24px; }
-  .ob-welcome .wm.big { font-size: 96px; }
-  .ob-welcome .ob-h { font-size: 64px; }
-  .ob-welcome .ob-hint { font-size: 20px; }
-  .ob-welcome .auth-btn { min-height: 68px; font-size: 19px; }
+  .ob-welcome .wm.big { font-size: 72px; }
+  .ob-welcome .ob-h { font-size: var(--t4); max-width: 24ch; }
+  .ob-welcome .ob-hint { font-size: var(--t1); max-width: 36ch; }
+  .ob-welcome .auth-btn { font-size: 18px; }
+}
+@media (min-width: 900px) {
+  .ob.solo .ob-main { width: min(1080px, 100%); }
+  .ob-welcome .ob-h { max-width: 900px; }
+  .ob-welcome .ob-auth { width: min(440px, 100%); }
 }
