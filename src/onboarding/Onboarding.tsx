@@ -11,6 +11,7 @@ import './onboarding.css'
 
 type StepId = 'welcome' | 'name' | 'age' | 'area' | 'you' | 'table' | 'takes' | 'contact' | 'photo' | 'buzzer' | 'ticket'
 const STEPS: StepId[] = ['welcome', 'name', 'age', 'area', 'you', 'table', 'takes', 'contact', 'photo', 'buzzer', 'ticket']
+const SAMPLE: Profile = { ...emptyProfile, name: 'Tomi', age: 27, area: 'Island', you: ['Funny', 'Curious', 'Creative'], takes: ['Jollof is better when it is a little burnt.'], hasPhoto: true }
 const SHOW_TICKET: StepId[] = ['name', 'age', 'area', 'you', 'takes', 'photo']
 
 export function Onboarding({ onDone, onExit }: { onDone: (p: Profile) => void; onExit: () => void }) {
@@ -33,17 +34,22 @@ export function Onboarding({ onDone, onExit }: { onDone: (p: Profile) => void; o
       <div className="ob-bar" role="progressbar" aria-label="Progress" aria-valuemin={0} aria-valuemax={STEPS.length - 1} aria-valuenow={i}>
         <span style={{ transform: `scaleX(${i / (STEPS.length - 1)})` }} />
       </div>
-      <header className="ob-top">
-        <button className="ob-back" onClick={back} aria-label={i === 0 ? 'Leave' : 'Back'}>←</button>
-        <button className="ob-sound" aria-pressed={sound} onClick={() => { setSound(!sound); setSoundState(!sound); if (!sound) tick() }}>
-          Sound {sound ? 'on' : 'off'}
-        </button>
-      </header>
-      {SHOW_TICKET.includes(step) && (
-        <div className="ob-ticket"><Ticket profile={p} when={when} /></div>
-      )}
-      <div className="ob-stage" ref={stage} key={step}>
-        {step === 'welcome' && <Welcome onSignedIn={(id) => { set({ provider: id.provider, name: firstName(id.name), instagram: id.provider === 'instagram' ? id.handle : '' }); next() }} />}
+      <aside className="ob-aside" aria-hidden="true">
+        <Ticket profile={step === 'welcome' ? SAMPLE : p} when={when} full printed={step === 'ticket'} />
+        <p className="ob-aside-note">{step === 'welcome' ? 'A sample ticket. Yours fills in as you answer.' : 'Your ticket, as people will see it.'}</p>
+      </aside>
+      <div className="ob-main">
+        <header className="ob-top">
+          <button className="ob-back" onClick={back} aria-label={i === 0 ? 'Leave' : 'Back'}>←</button>
+          <button className="ob-sound" aria-pressed={sound} onClick={() => { setSound(!sound); setSoundState(!sound); if (!sound) tick() }}>
+            Sound {sound ? 'on' : 'off'}
+          </button>
+        </header>
+        {SHOW_TICKET.includes(step) && (
+          <div className="ob-ticket"><Ticket profile={p} when={when} /></div>
+        )}
+        <div className="ob-stage" ref={stage} key={step}>
+          {step === 'welcome' && <Welcome onSignedIn={(id) => { set({ provider: id.provider, name: firstName(id.name), instagram: id.provider === 'instagram' ? id.handle : '' }); next() }} />}
         {step === 'name' && <Name provider={p.provider} value={p.name} onNext={(v) => { set({ name: v }); next() }} />}
         {step === 'age' && <Age value={p.age} onNext={(v) => { set({ age: v }); next() }} />}
         {step === 'area' && <Area value={p.area} onNext={(v) => { set({ area: v }); next() }} />}
@@ -62,6 +68,7 @@ export function Onboarding({ onDone, onExit }: { onDone: (p: Profile) => void; o
         {step === 'photo' && <Photo has={p.hasPhoto} onNext={(hasPhoto) => { set({ hasPhoto }); next() }} />}
         {step === 'buzzer' && <Buzzer onNext={next} />}
         {step === 'ticket' && <Final p={p} when={when} onDone={() => onDone(p)} />}
+        </div>
       </div>
     </div>
   )
