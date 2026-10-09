@@ -39,14 +39,12 @@ export function Onboarding({ onPractice }: { onPractice: () => void }) {
         </aside>
       )}
       <div className="ob-main">
-        <header className="ob-top">
-          <button className="ob-back" onClick={back} aria-label="Back" style={{ visibility: i === 0 ? 'hidden' : 'visible' }}>←</button>
-          <span />
-        </header>
+<div className="ob-top" />
         {SHOW_TICKET.includes(step) && (
           <div className="ob-ticket"><Ticket profile={p} when={when} enter={step === 'name'} /></div>
         )}
         <div className="ob-stage" ref={stage} key={step}>
+          {i > 0 && <button className="ob-back" onClick={back}><span aria-hidden="true">←</span> Back</button>}
           {step === 'welcome' && <Welcome onSignedIn={(id) => { set({ provider: id.provider, name: firstName(id.name), instagram: id.provider === 'instagram' ? id.handle : '' }); next() }} />}
         {step === 'name' && <Name provider={p.provider} value={p.name} onNext={(v) => { set({ name: v }); next() }} />}
         {step === 'age' && <Age value={p.age} onNext={(v) => { set({ age: v }); next() }} />}

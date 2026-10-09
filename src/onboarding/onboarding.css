@@ -193,3 +193,10 @@
 .ob-welcome .ob-hint { max-width: none; text-wrap: pretty; }
 @media (min-width: 560px) { .ob-welcome .ob-hint { white-space: nowrap; } }
 @media (min-width: 900px) { .ob-welcome .ob-hint { font-size: 18px; } }
+
+/* Back button sits directly above the question, aligned with its column */
+.ob-top { padding-top: env(safe-area-inset-top); min-height: 12px; }
+.ob-back { align-self: flex-start; margin: 0 0 8px -12px; display: inline-flex; align-items: center; gap: 8px; font: 600 16px var(--text); }
+.ob-back span { font-size: 20px; line-height: 1; }
+.ob-back:hover { color: var(--ink); }
+.ob-back:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
