@@ -46,7 +46,7 @@ export function Onboarding({ onPractice }: { onPractice: () => void }) {
         <div className="ob-stage" ref={stage} key={step}>
           {i > 0 && <button className="ob-back" onClick={back}><span aria-hidden="true">←</span> Back</button>}
           {step === 'welcome' && <Welcome onSignedIn={(id) => { set({ provider: id.provider, name: firstName(id.name), instagram: id.provider === 'instagram' ? id.handle : '' }); next() }} />}
-        {step === 'name' && <Name provider={p.provider} value={p.name} onNext={(v) => { set({ name: v }); next() }} />}
+        {step === 'name' && <Name provider={p.provider} value={p.name} onLive={(v) => set({ name: v })} onNext={(v) => { set({ name: v }); next() }} />}
         {step === 'age' && <Age value={p.age} onNext={(v) => { set({ age: v }); next() }} />}
         {step === 'area' && <Area value={p.area} onNext={(v) => { set({ area: v }); next() }} />}
         {step === 'you' && (
@@ -141,12 +141,12 @@ function Welcome({ onSignedIn }: { onSignedIn: (id: Awaited<ReturnType<typeof si
   )
 }
 
-function Name({ provider, value, onNext }: { provider: Provider | null; value: string; onNext: (v: string) => void }) {
+function Name({ provider, value, onLive, onNext }: { provider: Provider | null; value: string; onLive: (v: string) => void; onNext: (v: string) => void }) {
   const [v, setV] = useState(value)
   return (
     <Q title="What should we call you?" hint={provider ? `You are in. We took this from ${PROVIDERS.find((x) => x.id === provider)?.label}. Change it if you like. It is what people see.` : 'First name or a nickname. This is what people see.'} ok={validName(v)} onNext={() => onNext(cleanName(v))}>
       <label className="sr" htmlFor="nm">Name</label>
-      <input id="nm" className="ob-input big" data-autofocus autoComplete="given-name" maxLength={24} value={v} onChange={(e) => setV(e.target.value)} />
+      <input id="nm" className="ob-input big" data-autofocus autoComplete="given-name" maxLength={24} value={v} onChange={(e) => { setV(e.target.value); onLive(e.target.value.trimStart()) }} />
     </Q>
   )
 }
