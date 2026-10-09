@@ -169,7 +169,7 @@
 /* Welcome: compact "Night Gold" */
 .ob.solo { background: radial-gradient(ellipse 900px 520px at 50% 0%, rgba(255, 194, 74, 0.1), transparent 70%); }
 .ob-welcome { align-items: center; text-align: center; gap: 16px; }
-.ob-welcome .wm.big { font-size: 56px; line-height: 0.9; }
+.ob-welcome .wm.big { font-size: 72px; line-height: 0.9; }
 .ob-welcome .ob-h { font-size: clamp(28px, 8vw, 34px); line-height: 1.08; max-width: 480px; text-wrap: balance; }
 .ob-welcome .ob-hint { font-size: 15px; margin-inline: auto; }
 .ob-welcome .ob-auth { width: min(320px, 100%); gap: 10px; margin-top: 8px; }
@@ -184,5 +184,5 @@
   .ob-welcome .ob-h { font-size: 34px; }
   .ob-welcome .ob-hint { font-size: 15px; }
   .ob-welcome .auth-btn { min-height: 48px; font-size: 15px; }
-  .ob-welcome .wm.big { font-size: 56px; }
+  .ob-welcome .wm.big { font-size: 96px; }
 }
