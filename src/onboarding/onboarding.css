@@ -190,3 +190,6 @@
   .ob-welcome .ob-h { max-width: 900px; }
   .ob-welcome .ob-auth { width: min(440px, 100%); }
 }
+.ob-welcome .ob-hint { max-width: none; text-wrap: pretty; }
+@media (min-width: 560px) { .ob-welcome .ob-hint { white-space: nowrap; } }
+@media (min-width: 900px) { .ob-welcome .ob-hint { font-size: 18px; } }
