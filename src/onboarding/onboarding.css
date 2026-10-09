@@ -140,3 +140,22 @@
   .ob-main { padding-inline: 40px; }
   .ob-h { font-size: 44px; }
 }
+@media (min-width: 900px) {
+  .ob-q, .ob-welcome { text-align: center; align-items: stretch; }
+  .ob-hint, .ob-fine { margin-inline: auto; }
+  .wm.big { align-self: center; }
+  .auth-btn { justify-content: center; }
+  .auth-btn .auth-label { flex: none; }
+  .auth-btn .auth-glyph { position: absolute; left: 24px; }
+  .auth-btn .auth-spin { position: absolute; right: 24px; }
+  .chips-pick, .plate { justify-content: center; }
+  .ob-field input, .ob-input { text-align: center; }
+  .ob-field { justify-content: center; }
+  .ob-field input { flex: none; width: 12ch; }
+  .ob-foot { align-items: stretch; }
+  .ob-row { justify-content: center; gap: 24px; }
+  .ob-link { align-self: center; }
+  .ob-opts button { text-align: center; }
+  .ob-input.narrow { margin-inline: auto; display: block; }
+  .ob-err, .ob-why { text-align: center; }
+}
