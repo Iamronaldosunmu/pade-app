@@ -168,9 +168,9 @@
 
 /* Welcome: Night Gold. One type scale (16px base, 1.333 ratio), 8px spacing grid, 56px touch targets. */
 .ob-welcome { --t0: 16px; --t1: 21px; --t3: 38px; --t4: 51px; --t5: 67px; align-items: center; text-align: center; gap: 24px; }
-.ob.solo { background: radial-gradient(ellipse 900px 520px at 50% 0%, rgba(255, 194, 74, 0.1), transparent 70%); }
-.ob-welcome .wm.big { font-size: var(--t4); line-height: 0.9; }
-.ob-welcome .ob-h { font-size: var(--t3); line-height: 1.08; max-width: 18ch; text-wrap: balance; }
+.app-onb:has(.ob.solo) { background: radial-gradient(ellipse 900px 520px at 50% 0%, rgba(255, 194, 74, 0.1), transparent 70%); }
+.ob-welcome .wm.big { font-size: var(--t5); line-height: 0.9; }
+.ob-welcome .ob-h { font-size: clamp(28px, 8.6vw, var(--t3)); line-height: 1.08; max-width: 24ch; text-wrap: balance; }
 .ob-welcome .ob-hint { font-size: var(--t0); line-height: 1.5; max-width: 34ch; margin-inline: auto; text-wrap: balance; }
 .ob-welcome .ob-auth { width: min(360px, 100%); gap: 12px; margin-top: 8px; }
 .ob-welcome .auth-btn { min-height: 56px; border-radius: 999px; font-size: 17px; justify-content: center; padding: 0 56px; }
@@ -180,8 +180,8 @@
 .ob-welcome .gl-g { font-size: 20px; }
 .ob-welcome .auth-btn .auth-spin { position: absolute; right: 22px; }
 @media (min-width: 900px) {
-  .ob-welcome .wm.big { font-size: var(--t5); }
-  .ob-welcome .ob-h { font-size: var(--t4); max-width: 16ch; }
+  .ob-welcome .wm.big { font-size: 90px; }
+  .ob-welcome .ob-h { font-size: var(--t4); max-width: 24ch; }
   .ob-welcome .ob-hint { font-size: var(--t1); max-width: 36ch; }
   .ob-welcome .auth-btn { font-size: 18px; }
 }
