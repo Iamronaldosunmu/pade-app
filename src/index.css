@@ -1,0 +1,31 @@
+:root {
+  color-scheme: dark;
+  --buzz: #ff3b2f;
+  --ground: #0b0c0f;
+  --surface: #15171c;
+  --ink: #f4f2ed;
+  --ink-muted: #9b9da6;
+  --line: #2a2d35;
+  --gold: #ffc24a;
+  --display: 'Archivo', 'Arial Narrow', Arial, sans-serif;
+  --text: 'Hanken Grotesk', system-ui, sans-serif;
+  --time: 'DM Mono', ui-monospace, monospace;
+  --ease: cubic-bezier(0.23, 1, 0.32, 1);
+}
+*, *::before, *::after { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font: 400 17px/1.5 var(--text);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+h1, h2, p { margin: 0; text-wrap: balance; }
+.sr { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}

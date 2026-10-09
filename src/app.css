@@ -1,0 +1,9 @@
+.lobby { height: 100%; display: grid; align-content: center; justify-items: center; gap: 18px; padding: 24px; text-align: center; }
+.wm { font: 900 44px/0.9 var(--display); font-stretch: 68%; letter-spacing: -0.015em; }
+.wm i { font-style: normal; color: var(--gold); }
+.lobby h1 { font: 800 clamp(36px, 8vw, 64px)/1 var(--text); letter-spacing: -0.04em; }
+.lede { color: var(--ink-muted); max-width: 34ch; }
+.speeds { display: inline-flex; padding: 5px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); }
+.speeds button { min-height: 44px; padding: 0 18px; border: 0; border-radius: 999px; background: none; color: var(--ink-muted); font-weight: 700; font-size: 15px; transition: background-color 0.25s, color 0.25s; }
+.speeds button[aria-pressed='true'] { background: var(--gold); color: var(--ground); }
+.go { min-height: 56px; padding: 0 44px; border: 0; border-radius: 999px; background: var(--gold); color: var(--ground); font: 800 18px var(--text); }
