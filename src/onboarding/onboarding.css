@@ -166,23 +166,21 @@
 }
 @keyframes asideIn { from { opacity: 0; } }
 
-/* Welcome: compact "Night Gold" */
+/* Welcome: Night Gold, large */
 .ob.solo { background: radial-gradient(ellipse 900px 520px at 50% 0%, rgba(255, 194, 74, 0.1), transparent 70%); }
-.ob-welcome { align-items: center; text-align: center; gap: 16px; }
-.ob-welcome .wm.big { font-size: 56px; line-height: 0.9; }
-.ob-welcome .ob-h { font-size: clamp(28px, 8vw, 34px); line-height: 1.08; max-width: 480px; text-wrap: balance; }
-.ob-welcome .ob-hint { font-size: 15px; margin-inline: auto; }
-.ob-welcome .ob-auth { width: min(320px, 100%); gap: 10px; margin-top: 8px; }
-.ob-welcome .auth-btn { min-height: 48px; border-radius: 999px; font-size: 15px; justify-content: center; padding: 0 18px; }
-.ob-welcome .auth-btn:first-child { background: var(--ink); color: var(--ground); border-color: var(--ink); }
+.ob-welcome { align-items: center; text-align: center; gap: 22px; }
+.ob-welcome .wm.big { font-size: 80px; line-height: 0.9; }
+.ob-welcome .ob-h { font-size: clamp(36px, 10vw, 48px); line-height: 1.02; letter-spacing: -0.04em; max-width: 760px; text-wrap: balance; }
+.ob-welcome .ob-hint { font-size: 17px; margin-inline: auto; }
+.ob-welcome .ob-auth { width: min(440px, 100%); gap: 12px; margin-top: 12px; }
+.ob-welcome .auth-btn { min-height: 64px; border-radius: 999px; font-size: 18px; justify-content: center; padding: 0 24px; }
 .ob-welcome .auth-btn .auth-label { flex: none; }
-.ob-welcome .auth-btn .auth-glyph { position: absolute; left: 18px; width: 20px; }
-.ob-welcome .auth-btn .auth-glyph svg { width: 17px; height: 17px; }
-.ob-welcome .gl-g { font-size: 17px; }
-.ob-welcome .auth-btn .auth-spin { position: absolute; right: 18px; }
+.ob-welcome .auth-btn .auth-glyph { position: absolute; left: 26px; }
+.ob-welcome .auth-btn .auth-spin { position: absolute; right: 26px; }
 @media (min-width: 900px) {
-  .ob-welcome .ob-h { font-size: 34px; }
-  .ob-welcome .ob-hint { font-size: 15px; }
-  .ob-welcome .auth-btn { min-height: 48px; font-size: 15px; }
-  .ob-welcome .wm.big { font-size: 56px; }
+  .ob-welcome { gap: 24px; }
+  .ob-welcome .wm.big { font-size: 96px; }
+  .ob-welcome .ob-h { font-size: 64px; }
+  .ob-welcome .ob-hint { font-size: 20px; }
+  .ob-welcome .auth-btn { min-height: 68px; font-size: 19px; }
 }
