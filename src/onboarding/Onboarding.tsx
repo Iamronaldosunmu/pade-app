@@ -50,7 +50,7 @@ export function Onboarding({ onPractice }: { onPractice: () => void }) {
           {step === 'welcome' && <Welcome onSignedIn={(id) => { set({ provider: id.provider, name: firstName(id.name), instagram: id.provider === 'instagram' ? id.handle : '' }); next() }} />}
         {step === 'name' && <Name provider={p.provider} value={p.name} onLive={(v) => set({ name: v })} onNext={(v) => { set({ name: v }); next() }} />}
         {step === 'age' && <Age value={p.age} onLive={(age) => set({ age })} onNext={(v) => { set({ age: v }); next() }} />}
-        {step === 'area' && <Area value={p.area} onNext={(v) => { set({ area: v }); next() }} />}
+        {step === 'area' && <Area value={p.area} onLive={(area) => set({ area })} onNext={(v) => { set({ area: v }); next() }} />}
         {step === 'you' && (
           <Q title="Pick three words for you." hint="What people say about you." ok={p.you.length === 3} onNext={next}>
             <Pick value={p.you} onChange={(you) => set({ you })} max={3} label="About you" />
@@ -171,13 +171,13 @@ function Age({ value, onLive, onNext }: { value: number | null; onLive: (v: numb
   )
 }
 
-function Area({ value, onNext }: { value: string; onNext: (v: string) => void }) {
+function Area({ value, onLive, onNext }: { value: string; onLive: (v: string) => void; onNext: (v: string) => void }) {
   const [v, setV] = useState(value)
   return (
     <Q title="Where in Lagos are you?" hint="Roughly. It helps people picture you." ok={!!v} onNext={() => onNext(v)}>
       <div className="ob-opts" role="radiogroup" aria-label="Area">
         {AREAS.map((a, k) => (
-          <button key={a} type="button" role="radio" aria-checked={v === a} data-autofocus={k === 0 ? '' : undefined} onClick={() => { tick(); setV(a) }}>{a}</button>
+          <button key={a} type="button" role="radio" aria-checked={v === a} data-autofocus={k === 0 ? '' : undefined} onClick={() => { tick(); setV(a); onLive(a) }}>{a}</button>
         ))}
       </div>
     </Q>

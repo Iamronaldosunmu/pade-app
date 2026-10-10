@@ -4,7 +4,7 @@ export const TAGS = [
   'Tech', 'Faith-led', 'Fashion', 'Film', 'Outspoken', 'Family-minded',
 ]
 
-export const AREAS = ['Island', 'Mainland', 'Lekki & Ajah', 'Ikorodu & beyond']
+export const AREAS = ['Island', 'Mainland']
 
 export const TAKE_IDEAS = [
   'Jollof is better when it is a little burnt.',
