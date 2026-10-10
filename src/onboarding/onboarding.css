@@ -108,7 +108,8 @@
 @media (min-width: 900px) {
   .ob { max-width: none; padding: 0; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); overflow: hidden; }
   .ob-aside { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; padding: 48px; background: radial-gradient(ellipse at 30% 40%, rgba(255, 194, 74, 0.16), transparent 62%), var(--surface); border-right: 1px solid var(--line); }
-  .ob-aside .ticket { zoom: 1.45; max-width: 400px; transform: rotate(-3deg); }
+  .ob-aside .tk-tilt { zoom: 1.45; max-width: 400px; }
+  .ob-aside .ticket { transform: rotate(-3deg); }
   .ob-aside .ticket.full { transform: rotate(-3deg); }
   .ob-aside-note { color: var(--ink-muted); font: 500 14px var(--time); letter-spacing: 0.02em; }
   .ob-main { width: min(680px, 100%); margin: 0 auto; padding: 0 56px calc(24px + env(safe-area-inset-bottom)); overflow-y: auto; }
@@ -136,7 +137,7 @@
 }
 @media (min-width: 900px) and (max-width: 1199px) {
   .ob-aside { padding: 32px; }
-  .ob-aside .ticket { zoom: 1.05; max-width: none; }
+  .ob-aside .tk-tilt { zoom: 1.05; max-width: none; }
   .ob-main { padding-inline: 40px; }
   .ob-h { font-size: 44px; }
 }
@@ -232,7 +233,7 @@
 
 /* hover: tilt wrapper, light, lift and depth */
 .tk-tilt { position: relative; width: 100%; transform-style: preserve-3d; will-change: transform; }
-.tk-shade { position: absolute; inset: 30% -6% -30%; background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.6), transparent 68%); opacity: 0; pointer-events: none; transform: translateZ(-1px); }
+.tk-shade { position: absolute; inset: 55% 8% -14%; background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.5), transparent 70%); opacity: 0; pointer-events: none; transform: translateZ(-1px); }
 .tk-glare { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; opacity: 0; pointer-events: none; z-index: 3; }
 .tk-glare i { position: absolute; left: -30%; top: -30%; width: 160%; height: 160%; background: radial-gradient(circle at center, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.14) 30%, transparent 56%); }
 .tk-tilt .tk-name { transform: translateZ(26px); }
