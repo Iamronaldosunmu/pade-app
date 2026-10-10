@@ -246,3 +246,5 @@
 @media (prefers-reduced-motion: reduce) { .tk-tilt { will-change: auto; } .tk-tilt .tk-name, .tk-tilt .tk-kicker, .tk-tilt .tk-meta, .tk-tilt .tk-tags, .tk-tilt .tk-take, .tk-tilt .tk-contact, .tk-tilt .tk-photo, .tk-tilt .tk-when { transform: none; } }
 
 .tk-work { margin-top: 4px; font: 700 14px/1.2 var(--text); overflow-wrap: anywhere; }
+
+.ticket.full .tk-take { margin-top: 12px; font: italic 700 19px/1.25 var(--text); }

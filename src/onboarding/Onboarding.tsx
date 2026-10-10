@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import { AREAS, TAKE_IDEAS } from './data'
 import { firstName, PROVIDERS, signIn, type Provider } from './auth'
 import { chime, reducedMotion, thud, tick } from './feel'
-import { Pick } from './Pick'
 import { Ticket } from './Ticket'
 import { canvasBlob, drawShareCard, INVITE_LINK, DEFAULT_SHARE, type ShareOpts } from './shareCard'
 import { nextSession, sessionIcs } from './session-time'
@@ -10,9 +9,9 @@ import { emptyProfile, type Profile } from './types'
 import { cleanHandle, cleanName, formatPhone, isAdult, normalizePhone, parseAge, validHandle, validName } from './validate'
 import './onboarding.css'
 
-type StepId = 'welcome' | 'name' | 'age' | 'area' | 'work' | 'you' | 'table' | 'takes' | 'contact' | 'photo' | 'buzzer' | 'ticket'
-const STEPS: StepId[] = ['welcome', 'name', 'age', 'area', 'work', 'you', 'table', 'takes', 'contact', 'photo', 'buzzer', 'ticket']
-const SHOW_TICKET: StepId[] = ['name', 'age', 'area', 'work', 'you', 'takes', 'contact', 'photo']
+type StepId = 'welcome' | 'name' | 'age' | 'area' | 'work' | 'takes' | 'contact' | 'photo' | 'buzzer' | 'ticket'
+const STEPS: StepId[] = ['welcome', 'name', 'age', 'area', 'work', 'takes', 'contact', 'photo', 'buzzer', 'ticket']
+const SHOW_TICKET: StepId[] = ['name', 'age', 'area', 'work', 'takes', 'contact', 'photo']
 
 export function Onboarding({ onPractice }: { onPractice: () => void }) {
   const [i, setI] = useState(0)
@@ -52,16 +51,6 @@ export function Onboarding({ onPractice }: { onPractice: () => void }) {
         {step === 'age' && <Age value={p.age} onLive={(age) => set({ age })} onNext={(v) => { set({ age: v }); next() }} />}
         {step === 'area' && <Area value={p.area} onLive={(area) => set({ area })} onNext={(v) => { set({ area: v }); next() }} />}
         {step === 'work' && <Work value={p.work} onLive={(work) => set({ work })} onNext={(work) => { set({ work }); next() }} />}
-        {step === 'you' && (
-          <Q title="Pick three words for you." hint="What people say about you." ok={p.you.length === 3} onNext={next}>
-            <Pick value={p.you} onChange={(you) => set({ you })} max={3} label="About you" />
-          </Q>
-        )}
-        {step === 'table' && (
-          <Q title="Who do you want at your table?" hint="Pick up to four. Nobody sees this." ok={p.table.length >= 1} onNext={next}>
-            <Pick value={p.table} onChange={(table) => set({ table })} max={4} label="Your table" />
-          </Q>
-        )}
         {step === 'takes' && <Takes value={p.takes} onLive={(takes) => set({ takes })} onNext={(takes) => { set({ takes }); next() }} />}
         {step === 'contact' && <Contact p={p} onLive={(patch) => set(patch)} onNext={(patch) => { set(patch); next() }} />}
         {step === 'photo' && <Photo has={p.hasPhoto} onNext={(hasPhoto) => { set({ hasPhoto }); next() }} />}
@@ -373,13 +362,13 @@ function Final({ p, when, onPractice }: { p: Profile; when: Date; onPractice: ()
   }
   return (
     <div className="ob-q ob-final">
-      <Head title="Make it yours." hint="This is what people see when you share it. Only your first name." />
+      <Head title="Make it yours." hint="This is what people see when you share it. Just your first name and your hot take." />
       <canvas className="share-card" ref={card} role="img" aria-label="Your Pàdé ticket, ready to share" />
       {seg('style', 'Colour', [['cream', 'Cream'], ['gold', 'Gold'], ['night', 'Night']])}
       {seg('stamp', 'Stamp', [['in', "I'm going"], ['friday', 'See you Friday'], ['none', 'None']])}
-      <div className="shr-opt" role="group" aria-label="Three words">
-        <span className="shr-l">Words</span>
-        <button aria-pressed={opts.words} onClick={() => pick('words', !opts.words)}>{opts.words ? 'Shown' : 'Hidden'}</button>
+      <div className="shr-opt" role="group" aria-label="Hot take">
+        <span className="shr-l">Take</span>
+        <button aria-pressed={opts.take} onClick={() => pick('take', !opts.take)}>{opts.take ? 'Shown' : 'Hidden'}</button>
       </div>
       <div className="ob-foot">
         <button className="ob-next" data-autofocus onClick={share}>Share my ticket</button>

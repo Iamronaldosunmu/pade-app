@@ -80,10 +80,6 @@ export function Ticket({ profile, when, full, printed, enter }: { profile: Profi
           {profile.age ?? '··'} · {profile.area || '·····'}
         </p>
         {profile.work && <p className="tk-work">{profile.work}</p>}
-        <ul className="tk-tags" aria-label="About you">
-          {profile.you.map((t) => <li key={t}>{t}</li>)}
-          {profile.you.length === 0 && <li className="tk-ph">Your tags</li>}
-        </ul>
         {full && profile.takes[0] && <p className="tk-take">“{profile.takes[0]}”</p>}
         {full && profile.takes[1] && <p className="tk-take">“{profile.takes[1]}”</p>}
         {full && contact && <p className="tk-contact">Private · {contact}</p>}

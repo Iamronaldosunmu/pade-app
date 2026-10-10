@@ -5,8 +5,8 @@ export const INVITE_LINK = ''
 
 export type ShareStyle = 'cream' | 'gold' | 'night'
 export type ShareStamp = 'none' | 'in' | 'friday'
-export interface ShareOpts { style: ShareStyle; stamp: ShareStamp; words: boolean }
-export const DEFAULT_SHARE: ShareOpts = { style: 'cream', stamp: 'in', words: true }
+export interface ShareOpts { style: ShareStyle; stamp: ShareStamp; take: boolean }
+export const DEFAULT_SHARE: ShareOpts = { style: 'cream', stamp: 'in', take: true }
 const STYLES: Record<ShareStyle, { paper: string; ink: string; sub: string }> = {
   cream: { paper: '#efe6cf', ink: '#1d1608', sub: 'rgba(29,22,8,0.6)' },
   gold: { paper: '#ffc24a', ink: '#1a1203', sub: 'rgba(26,18,3,0.65)' },
@@ -131,24 +131,15 @@ export async function drawShareCard(profile: Profile, canvas: HTMLCanvasElement 
   ctx.fillStyle = st.ink
   ctx.fillText(name, left, -th / 2 + 70 + 20 + size * 0.85)
 
-  // three words
-  let tx = left
-  const tagY = th / 2 - 56
-  font(ctx, 800, 28, HANKEN, 'normal', '0px')
-  for (const word of opts.words ? profile.you.slice(0, 3) : []) {
-    const w = ctx.measureText(word).width + 40
-    ctx.save()
-    ctx.translate(tx + w / 2, tagY)
-    ctx.rotate(((word.length % 3) - 1) * 0.03)
-    roundRect(ctx, -w / 2, -26, w, 52, 12)
-    ctx.lineWidth = 3
-    ctx.strokeStyle = st.ink
-    ctx.stroke()
+  // hot take, the thing worth arguing with
+  const take = opts.take ? profile.takes[0]?.trim() : ''
+  if (take) {
     ctx.fillStyle = st.ink
-    ctx.textAlign = 'center'
-    ctx.fillText(word, 0, 10)
-    ctx.restore()
-    tx += w + 14
+    font(ctx, 800, 40, HANKEN, 'normal', '-0.5px')
+    const room = tw - 56 - 56 - (opts.stamp === 'none' ? 0 : 190)
+    const tl = wrap(ctx, `\u201C${take}\u201D`, room).slice(0, 3)
+    const top = th / 2 - 56 - (tl.length - 1) * 50
+    tl.forEach((l, i) => ctx.fillText(l, left, top + i * 50))
   }
 
   // stamp
