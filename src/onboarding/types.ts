@@ -9,6 +9,8 @@ export interface Profile {
   name: string
   age: number | null
   area: string
+  /** What they do, in their own words. */
+  work: string
   /** What the person says about themselves. */
   you: string[]
   /** What they would like at their table. */
@@ -26,6 +28,7 @@ export const emptyProfile: Profile = {
   name: '',
   age: null,
   area: '',
+  work: '',
   you: [],
   table: [],
   takes: [],

@@ -79,6 +79,7 @@ export function Ticket({ profile, when, full, printed, enter }: { profile: Profi
         <p className="tk-meta">
           {profile.age ?? '··'} · {profile.area || '·····'}
         </p>
+        {profile.work && <p className="tk-work">{profile.work}</p>}
         <ul className="tk-tags" aria-label="About you">
           {profile.you.map((t) => <li key={t}>{t}</li>)}
           {profile.you.length === 0 && <li className="tk-ph">Your tags</li>}

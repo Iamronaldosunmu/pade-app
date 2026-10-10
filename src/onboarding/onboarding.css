@@ -243,3 +243,5 @@
 .tk-tags li { transition: transform 0.35s var(--ease); }
 .tk-tilt:hover .tk-tags li { transform: rotate(0deg) translateY(-2px); }
 @media (prefers-reduced-motion: reduce) { .tk-tilt { will-change: auto; } .tk-tilt .tk-name, .tk-tilt .tk-kicker, .tk-tilt .tk-meta, .tk-tilt .tk-tags, .tk-tilt .tk-take, .tk-tilt .tk-contact, .tk-tilt .tk-photo, .tk-tilt .tk-when { transform: none; } }
+
+.tk-work { margin-top: 4px; font: 700 14px/1.2 var(--text); overflow-wrap: anywhere; }

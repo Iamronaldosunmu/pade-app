@@ -10,9 +10,9 @@ import { emptyProfile, type Profile } from './types'
 import { cleanHandle, cleanName, formatPhone, isAdult, normalizePhone, parseAge, validHandle, validName } from './validate'
 import './onboarding.css'
 
-type StepId = 'welcome' | 'name' | 'age' | 'area' | 'you' | 'table' | 'takes' | 'contact' | 'photo' | 'buzzer' | 'ticket'
-const STEPS: StepId[] = ['welcome', 'name', 'age', 'area', 'you', 'table', 'takes', 'contact', 'photo', 'buzzer', 'ticket']
-const SHOW_TICKET: StepId[] = ['name', 'age', 'area', 'you', 'takes', 'contact', 'photo']
+type StepId = 'welcome' | 'name' | 'age' | 'area' | 'work' | 'you' | 'table' | 'takes' | 'contact' | 'photo' | 'buzzer' | 'ticket'
+const STEPS: StepId[] = ['welcome', 'name', 'age', 'area', 'work', 'you', 'table', 'takes', 'contact', 'photo', 'buzzer', 'ticket']
+const SHOW_TICKET: StepId[] = ['name', 'age', 'area', 'work', 'you', 'takes', 'contact', 'photo']
 
 export function Onboarding({ onPractice }: { onPractice: () => void }) {
   const [i, setI] = useState(0)
@@ -51,6 +51,7 @@ export function Onboarding({ onPractice }: { onPractice: () => void }) {
         {step === 'name' && <Name provider={p.provider} value={p.name} onLive={(v) => set({ name: v })} onNext={(v) => { set({ name: v }); next() }} />}
         {step === 'age' && <Age value={p.age} onLive={(age) => set({ age })} onNext={(v) => { set({ age: v }); next() }} />}
         {step === 'area' && <Area value={p.area} onLive={(area) => set({ area })} onNext={(v) => { set({ area: v }); next() }} />}
+        {step === 'work' && <Work value={p.work} onLive={(work) => set({ work })} onNext={(work) => { set({ work }); next() }} />}
         {step === 'you' && (
           <Q title="Pick three words for you." hint="What people say about you." ok={p.you.length === 3} onNext={next}>
             <Pick value={p.you} onChange={(you) => set({ you })} max={3} label="About you" />
@@ -180,6 +181,17 @@ function Area({ value, onLive, onNext }: { value: string; onLive: (v: string) =>
           <button key={a} type="button" role="radio" aria-checked={v === a} data-autofocus={k === 0 ? '' : undefined} onClick={() => { tick(); setV(a); onLive(a) }}>{a}</button>
         ))}
       </div>
+    </Q>
+  )
+}
+
+function Work({ value, onLive, onNext }: { value: string; onLive: (v: string) => void; onNext: (v: string) => void }) {
+  const [v, setV] = useState(value)
+  const ok = v.trim().length >= 2
+  return (
+    <Q title="What do you do?" hint="Your job, your studies, or what keeps you busy." ok={ok} onNext={() => onNext(v.trim())}>
+      <label className="sr" htmlFor="wk">What you do</label>
+      <input id="wk" className="ob-input big" data-autofocus autoComplete="organization-title" maxLength={36} placeholder="Product designer" value={v} onChange={(e) => { setV(e.target.value); onLive(e.target.value.trimStart()) }} />
     </Q>
   )
 }
