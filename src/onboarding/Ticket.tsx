@@ -29,7 +29,7 @@ export function Ticket({ profile, when, full, printed, enter }: { profile: Profi
         {full && profile.takes[0] && <p className="tk-take">“{profile.takes[0]}”</p>}
       </div>
       <div className="tk-stub">
-        <p className="tk-when">{sessionLabel(when)}</p>
+        {printed && <p className="tk-when">{sessionLabel(when)}</p>}
         <span className={`tk-photo${profile.hasPhoto ? ' sealed' : ''}`} aria-hidden="true">
           {profile.hasPhoto ? 'sealed' : 'photo'}
         </span>
