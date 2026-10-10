@@ -12,7 +12,7 @@ import './onboarding.css'
 
 type StepId = 'welcome' | 'name' | 'age' | 'area' | 'you' | 'table' | 'takes' | 'contact' | 'photo' | 'buzzer' | 'ticket'
 const STEPS: StepId[] = ['welcome', 'name', 'age', 'area', 'you', 'table', 'takes', 'contact', 'photo', 'buzzer', 'ticket']
-const SHOW_TICKET: StepId[] = ['name', 'age', 'area', 'you', 'takes', 'photo']
+const SHOW_TICKET: StepId[] = ['name', 'age', 'area', 'you', 'takes', 'contact', 'photo']
 
 export function Onboarding({ onPractice }: { onPractice: () => void }) {
   const [i, setI] = useState(0)
@@ -49,7 +49,7 @@ export function Onboarding({ onPractice }: { onPractice: () => void }) {
         <div className="ob-stage" ref={stage} key={step}>
           {step === 'welcome' && <Welcome onSignedIn={(id) => { set({ provider: id.provider, name: firstName(id.name), instagram: id.provider === 'instagram' ? id.handle : '' }); next() }} />}
         {step === 'name' && <Name provider={p.provider} value={p.name} onLive={(v) => set({ name: v })} onNext={(v) => { set({ name: v }); next() }} />}
-        {step === 'age' && <Age value={p.age} onNext={(v) => { set({ age: v }); next() }} />}
+        {step === 'age' && <Age value={p.age} onLive={(age) => set({ age })} onNext={(v) => { set({ age: v }); next() }} />}
         {step === 'area' && <Area value={p.area} onNext={(v) => { set({ area: v }); next() }} />}
         {step === 'you' && (
           <Q title="Pick three words for you." hint="What people say about you." ok={p.you.length === 3} onNext={next}>
@@ -61,8 +61,8 @@ export function Onboarding({ onPractice }: { onPractice: () => void }) {
             <Pick value={p.table} onChange={(table) => set({ table })} max={4} label="Your table" />
           </Q>
         )}
-        {step === 'takes' && <Takes value={p.takes} onNext={(takes) => { set({ takes }); next() }} />}
-        {step === 'contact' && <Contact p={p} onNext={(patch) => { set(patch); next() }} />}
+        {step === 'takes' && <Takes value={p.takes} onLive={(takes) => set({ takes })} onNext={(takes) => { set({ takes }); next() }} />}
+        {step === 'contact' && <Contact p={p} onLive={(patch) => set(patch)} onNext={(patch) => { set(patch); next() }} />}
         {step === 'photo' && <Photo has={p.hasPhoto} onNext={(hasPhoto) => { set({ hasPhoto }); next() }} />}
         {step === 'buzzer' && <Buzzer onNext={next} />}
         {step === 'ticket' && <Final p={p} when={when} onPractice={onPractice} />}
@@ -158,14 +158,14 @@ function Name({ provider, value, onLive, onNext }: { provider: Provider | null; 
   )
 }
 
-function Age({ value, onNext }: { value: number | null; onNext: (v: number) => void }) {
+function Age({ value, onLive, onNext }: { value: number | null; onLive: (v: number | null) => void; onNext: (v: number) => void }) {
   const [v, setV] = useState(value ? String(value) : '')
   const a = parseAge(v)
   const under = a !== null && !isAdult(a) && v.length >= 2
   return (
     <Q title="How old are you?" hint="Pàdé is for adults, 18 and over." ok={isAdult(a)} onNext={() => a && onNext(a)}>
       <label className="sr" htmlFor="ag">Age</label>
-      <input id="ag" className="ob-input big narrow" data-autofocus inputMode="numeric" maxLength={2} value={v} onChange={(e) => setV(e.target.value.replace(/\D/g, ''))} aria-invalid={under} aria-describedby={under ? 'ag-err' : undefined} />
+      <input id="ag" className="ob-input big narrow" data-autofocus inputMode="numeric" maxLength={2} value={v} onChange={(e) => { const d = e.target.value.replace(/\D/g, ''); setV(d); onLive(parseAge(d)) }} aria-invalid={under} aria-describedby={under ? 'ag-err' : undefined} />
       {under && <p className="ob-err" id="ag-err" role="alert">You need to be 18 or over to join.</p>}
     </Q>
   )
@@ -184,30 +184,37 @@ function Area({ value, onNext }: { value: string; onNext: (v: string) => void })
   )
 }
 
-function Takes({ value, onNext }: { value: string[]; onNext: (v: string[]) => void }) {
+function Takes({ value, onLive, onNext }: { value: string[]; onLive: (v: string[]) => void; onNext: (v: string[]) => void }) {
   const [a, setA] = useState(value[0] ?? '')
   const [b, setB] = useState(value[1] ?? '')
   const [idea, setIdea] = useState(0)
   const ok = a.trim().length >= 3
+  const live = (x: string, y: string) => onLive([x.trim(), y.trim()].filter(Boolean))
   return (
     <Q title="Say something people can argue with." hint="A hot take. It goes on your ticket." ok={ok} onNext={() => onNext([a.trim(), b.trim()].filter(Boolean))}>
       <label className="sr" htmlFor="t1">Hot take</label>
-      <textarea id="t1" className="ob-input take" data-autofocus rows={2} maxLength={90} value={a} onChange={(e) => setA(e.target.value)} placeholder="Jollof is better when it is a little burnt." />
+      <textarea id="t1" className="ob-input take" data-autofocus rows={2} maxLength={90} value={a} onChange={(e) => { setA(e.target.value); live(e.target.value, b) }} placeholder="Jollof is better when it is a little burnt." />
       <div className="ob-row">
-        <button type="button" className="ob-link" onClick={() => { tick(); setA(TAKE_IDEAS[idea % TAKE_IDEAS.length]); setIdea(idea + 1) }}>Need an idea?</button>
+        <button type="button" className="ob-link" onClick={() => { tick(); const t = TAKE_IDEAS[idea % TAKE_IDEAS.length]; setA(t); live(t, b); setIdea(idea + 1) }}>Need an idea?</button>
         <span className="ob-count">{a.length}/90</span>
       </div>
       {a.trim() && (
         <>
           <label className="sr" htmlFor="t2">Second take, optional</label>
-          <textarea id="t2" className="ob-input take second" rows={2} maxLength={90} value={b} onChange={(e) => setB(e.target.value)} placeholder="One more, if you have it (optional)" />
+          <textarea id="t2" className="ob-input take second" rows={2} maxLength={90} value={b} onChange={(e) => { setB(e.target.value); live(a, e.target.value) }} placeholder="One more, if you have it (optional)" />
         </>
       )}
     </Q>
   )
 }
 
-function Contact({ p, onNext }: { p: Profile; onNext: (patch: Partial<Profile>) => void }) {
+/** While typing: show what is there so far as +234 digits, before it is a complete number. */
+function partialPhone(v: string): string {
+  const d = v.replace(/\D/g, '').replace(/^(234|0)/, '')
+  return d ? `+234${d}` : ''
+}
+
+function Contact({ p, onLive, onNext }: { p: Profile; onLive: (patch: Partial<Profile>) => void; onNext: (patch: Partial<Profile>) => void }) {
   const [kind, setKind] = useState(p.contactKind)
   const [h, setH] = useState(p.instagram)
   const [ph, setPh] = useState(p.phone ? formatPhone(p.phone) : '')
@@ -216,7 +223,7 @@ function Contact({ p, onNext }: { p: Profile; onNext: (patch: Partial<Profile>) 
   const ok = kind === 'whatsapp' ? !!num : validHandle(handle)
   return (
     <Q title="How should a match reach you?" hint="Shared only if you both stay past five minutes." ok={ok} onNext={() => onNext(kind === 'whatsapp' ? { contactKind: kind, phone: num ?? '' } : { contactKind: kind, instagram: handle })}>
-      <div className="shr-opt" role="radiogroup" aria-label="Contact">
+      <div className="seg" role="radiogroup" aria-label="Contact">
         <span className="seg-pill" style={{ transform: `translateX(${kind === 'whatsapp' ? 0 : 100}%)` }} />
         <button type="button" role="radio" aria-checked={kind === 'whatsapp'} onClick={() => { tick(); setKind('whatsapp') }}>WhatsApp</button>
         <button type="button" role="radio" aria-checked={kind === 'instagram'} onClick={() => { tick(); setKind('instagram') }}>Instagram</button>
@@ -224,13 +231,13 @@ function Contact({ p, onNext }: { p: Profile; onNext: (patch: Partial<Profile>) 
       {kind === 'whatsapp' ? (
         <>
           <label className="sr" htmlFor="ph">WhatsApp number</label>
-          <div className="ob-field big"><span aria-hidden="true">+234</span><input id="ph" data-autofocus type="tel" inputMode="tel" autoComplete="tel-national" placeholder="801 234 5678" value={ph} onChange={(e) => setPh(e.target.value)} /></div>
+          <div className="ob-field big"><span aria-hidden="true">+234</span><input id="ph" data-autofocus type="tel" inputMode="tel" autoComplete="tel-national" placeholder="801 234 5678" value={ph} onChange={(e) => { setPh(e.target.value); onLive({ contactKind: 'whatsapp', phone: normalizePhone(e.target.value) ?? partialPhone(e.target.value) }) }} /></div>
           <p className="ob-hint">Only the person you both choose to keep talking to sees it.</p>
         </>
       ) : (
         <>
           <label className="sr" htmlFor="ig">Instagram handle</label>
-          <div className="ob-field"><span aria-hidden="true">@</span><input id="ig" data-autofocus autoCapitalize="none" autoCorrect="off" value={h.replace(/^@/, '')} onChange={(e) => setH(e.target.value)} /></div>
+          <div className="ob-field"><span aria-hidden="true">@</span><input id="ig" data-autofocus autoCapitalize="none" autoCorrect="off" value={h.replace(/^@/, '')} onChange={(e) => { setH(e.target.value); onLive({ contactKind: 'instagram', instagram: cleanHandle(e.target.value) }) }} /></div>
         </>
       )}
     </Q>

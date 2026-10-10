@@ -68,7 +68,7 @@
 .envelope .flap { position: absolute; inset: 0 0 auto 0; height: 55%; background: #d9cdb0; clip-path: polygon(0 0, 100% 0, 50% 100%); transform-origin: top; transition: transform 0.7s var(--ease); transform: rotateX(180deg); }
 .envelope.sealed .flap { transform: rotateX(0); }
 .env-label { position: relative; padding: 12px; font: 600 13px var(--time); letter-spacing: 0.04em; text-transform: uppercase; }
-.ticket { display: grid; grid-template-columns: 1fr auto; background: #f3ead4; color: #241d0e; border-radius: 14px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45); transition: transform 0.15s ease-out; transform-style: preserve-3d; position: relative; width: 100%; }
+.ticket { display: grid; grid-template-columns: 1fr auto; background: #f3ead4; color: #241d0e; border-radius: 14px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45); transform-style: preserve-3d; position: relative; width: 100%; }
 .ticket::after { content: ''; position: absolute; top: 12%; bottom: 12%; right: 88px; border-left: 2px dashed rgba(36, 29, 14, 0.3); }
 .tk-main { padding: 14px 16px; min-width: 0; }
 .tk-stub { width: 104px; padding: 14px 10px; display: flex; flex-direction: column; align-items: center; gap: 8px; justify-content: center; text-align: center; }
@@ -227,3 +227,19 @@
 .shr-opt button[aria-pressed='true'] { border-color: var(--gold); color: var(--gold); }
 .ob-final .share-card { width: min(132px, 36vw); }
 @media (min-width: 900px) { .ob-final .share-card { width: 140px; } }
+
+.tk-contact { margin: 6px 0 0; font: 500 11px var(--mono, 'DM Mono', monospace); letter-spacing: 0.04em; color: rgba(29,22,8,0.55); }
+
+/* hover: tilt wrapper, light, lift and depth */
+.tk-tilt { position: relative; width: 100%; transform-style: preserve-3d; will-change: transform; }
+.tk-shade { position: absolute; inset: 30% -6% -30%; background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.6), transparent 68%); opacity: 0; pointer-events: none; transform: translateZ(-1px); }
+.tk-glare { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; opacity: 0; pointer-events: none; z-index: 3; }
+.tk-glare i { position: absolute; left: -30%; top: -30%; width: 160%; height: 160%; background: radial-gradient(circle at center, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.14) 30%, transparent 56%); }
+.tk-tilt .tk-name { transform: translateZ(26px); }
+.tk-tilt .tk-kicker, .tk-tilt .tk-meta { transform: translateZ(10px); }
+.tk-tilt .tk-tags { transform: translateZ(18px); }
+.tk-tilt .tk-take, .tk-tilt .tk-contact { transform: translateZ(8px); }
+.tk-tilt .tk-photo, .tk-tilt .tk-when { transform: translateZ(22px); }
+.tk-tags li { transition: transform 0.35s var(--ease); }
+.tk-tilt:hover .tk-tags li { transform: rotate(0deg) translateY(-2px); }
+@media (prefers-reduced-motion: reduce) { .tk-tilt { will-change: auto; } .tk-tilt .tk-name, .tk-tilt .tk-kicker, .tk-tilt .tk-meta, .tk-tilt .tk-tags, .tk-tilt .tk-take, .tk-tilt .tk-contact, .tk-tilt .tk-photo, .tk-tilt .tk-when { transform: none; } }
