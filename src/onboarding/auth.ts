@@ -15,14 +15,14 @@ export const PROVIDERS: { id: Provider; label: string }[] = [
 ]
 
 /**
- * Prototype stand-in for OAuth. It waits a moment, then returns a sample identity.
+ * Prototype stand-in for OAuth. It waits a moment, then returns an identity with no name or handle (nothing is invented).
  * The real version redirects to the provider and reads the profile back (Supabase Auth).
  */
 export function signIn(provider: Provider): Promise<Identity> {
   const sample: Record<Provider, Identity> = {
-    google: { provider, name: 'Tomiwa Adeyemi', handle: '' },
-    instagram: { provider, name: 'Tomi', handle: 'tomi.designs' },
-    x: { provider, name: 'Tomiwa', handle: 'tomiwa' },
+    google: { provider, name: '', handle: '' },
+    instagram: { provider, name: '', handle: '' },
+    x: { provider, name: '', handle: '' },
   }
   return new Promise((resolve) => setTimeout(() => resolve(sample[provider]), 1400))
 }

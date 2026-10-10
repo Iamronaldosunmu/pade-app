@@ -140,8 +140,9 @@ function Welcome({ onSignedIn }: { onSignedIn: (id: Awaited<ReturnType<typeof si
 
 function Name({ provider, value, onLive, onNext }: { provider: Provider | null; value: string; onLive: (v: string) => void; onNext: (v: string) => void }) {
   const [v, setV] = useState(value)
+  const [prefilled] = useState(!!value)
   return (
-    <Q title="What should we call you?" hint={provider ? `You are in. We took this from ${PROVIDERS.find((x) => x.id === provider)?.label}. Change it if you like. It is what people see.` : 'First name or a nickname. This is what people see.'} ok={validName(v)} onNext={() => onNext(cleanName(v))}>
+    <Q title="What should we call you?" hint={provider && prefilled ? `You are in. We took this from ${PROVIDERS.find((x) => x.id === provider)?.label}. Change it if you like. It is what people see.` : 'First name or a nickname. This is what people see.'} ok={validName(v)} onNext={() => onNext(cleanName(v))}>
       <label className="sr" htmlFor="nm">Name</label>
       <input id="nm" className="ob-input big" data-autofocus autoComplete="given-name" maxLength={24} value={v} onChange={(e) => { setV(e.target.value); onLive(e.target.value.trimStart()) }} />
     </Q>
