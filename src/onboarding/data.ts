@@ -1,7 +1,8 @@
+/** Things a friend would say about you. The same words are used for who you want at your table, so they must be traits, not interests. */
 export const TAGS = [
   'Funny', 'Curious', 'Ambitious', 'Creative', 'Calm', 'Adventurous',
-  'Foodie', 'Bookish', 'Music heads', 'Gamers', 'Fitness', 'Entrepreneurs',
-  'Tech', 'Faith-led', 'Fashion', 'Film', 'Outspoken', 'Family-minded',
+  'Warm', 'Witty', 'Loyal', 'Thoughtful', 'Playful', 'Confident',
+  'Easygoing', 'Driven', 'Outspoken', 'Kind', 'Generous', 'Down-to-earth',
 ]
 
 export const AREAS = ['Island', 'Mainland']
