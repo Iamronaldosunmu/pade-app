@@ -1,11 +1,9 @@
 import type { Provider } from './auth'
 
-export type ContactKind = 'whatsapp' | 'instagram'
+export type ContactKind = 'instagram' | 'x' | 'snapchat'
 
 export interface Profile {
   provider: Provider | null
-  /** E.164, e.g. +2348012345678. Only asked for when someone picks WhatsApp. */
-  phone: string
   name: string
   age: number | null
   area: string
@@ -17,14 +15,13 @@ export interface Profile {
   table: string[]
   takes: string[]
   contactKind: ContactKind
-  /** Instagram handle without the @, when contactKind is instagram. */
-  instagram: string
+  /** Handle on that network, without the @. Shared only when both people want to keep talking. */
+  handle: string
   hasPhoto: boolean
 }
 
 export const emptyProfile: Profile = {
   provider: null,
-  phone: '',
   name: '',
   age: null,
   area: '',
@@ -32,7 +29,7 @@ export const emptyProfile: Profile = {
   you: [],
   table: [],
   takes: [],
-  contactKind: 'whatsapp',
-  instagram: '',
+  contactKind: 'instagram',
+  handle: '',
   hasPhoto: false,
 }

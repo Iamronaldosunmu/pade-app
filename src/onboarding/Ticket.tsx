@@ -67,7 +67,7 @@ export function Ticket({ profile, when, full, printed, enter }: { profile: Profi
     rect.current = null
     kick()
   }
-  const contact = profile.contactKind === 'instagram' ? (profile.instagram ? `@${profile.instagram}` : '') : profile.phone
+  const contact = profile.handle ? `${profile.contactKind === 'snapchat' ? 'snap ' : profile.contactKind === 'x' ? 'X ' : 'IG '}@${profile.handle}` : ''
   return (
     <div className="tk-tilt" ref={wrap} onPointerEnter={enterHover} onPointerMove={move} onPointerLeave={leave}>
     <span className="tk-shade" ref={shade} />

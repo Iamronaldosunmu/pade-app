@@ -6,7 +6,7 @@ import { Ticket } from './Ticket'
 import { canvasBlob, drawShareCard, INVITE_LINK, DEFAULT_SHARE, type ShareOpts } from './shareCard'
 import { nextSession, sessionIcs } from './session-time'
 import { emptyProfile, type Profile } from './types'
-import { cleanHandle, cleanName, formatPhone, isAdult, normalizePhone, parseAge, validHandle, validName } from './validate'
+import { cleanHandle, cleanName, isAdult, parseAge, validHandleFor, validName } from './validate'
 import './onboarding.css'
 
 type StepId = 'welcome' | 'name' | 'age' | 'area' | 'work' | 'takes' | 'contact' | 'photo' | 'buzzer' | 'ticket'
@@ -46,7 +46,7 @@ export function Onboarding({ onPractice }: { onPractice: () => void }) {
           <div className="ob-ticket"><Ticket profile={p} when={when} enter={step === 'name'} /></div>
         )}
         <div className="ob-stage" ref={stage} key={step}>
-          {step === 'welcome' && <Welcome onSignedIn={(id) => { set({ provider: id.provider, name: firstName(id.name), instagram: id.provider === 'instagram' ? id.handle : '' }); next() }} />}
+          {step === 'welcome' && <Welcome onSignedIn={(id) => { set({ provider: id.provider, name: firstName(id.name), contactKind: id.provider === 'x' ? 'x' : 'instagram', handle: id.provider === 'google' ? '' : id.handle }); next() }} />}
         {step === 'name' && <Name provider={p.provider} value={p.name} onLive={(v) => set({ name: v })} onNext={(v) => { set({ name: v }); next() }} />}
         {step === 'age' && <Age value={p.age} onLive={(age) => set({ age })} onNext={(v) => { set({ age: v }); next() }} />}
         {step === 'area' && <Area value={p.area} onLive={(area) => set({ area })} onNext={(v) => { set({ area: v }); next() }} />}
@@ -210,38 +210,30 @@ function Takes({ value, onLive, onNext }: { value: string[]; onLive: (v: string[
   )
 }
 
-/** While typing: show what is there so far as +234 digits, before it is a complete number. */
-function partialPhone(v: string): string {
-  const d = v.replace(/\D/g, '').replace(/^(234|0)/, '')
-  return d ? `+234${d}` : ''
-}
+const NETWORKS: { id: Profile['contactKind']; label: string; prefix: string }[] = [
+  { id: 'instagram', label: 'Instagram', prefix: '@' },
+  { id: 'x', label: 'X', prefix: '@' },
+  { id: 'snapchat', label: 'Snapchat', prefix: '@' },
+]
 
 function Contact({ p, onLive, onNext }: { p: Profile; onLive: (patch: Partial<Profile>) => void; onNext: (patch: Partial<Profile>) => void }) {
   const [kind, setKind] = useState(p.contactKind)
-  const [h, setH] = useState(p.instagram)
-  const [ph, setPh] = useState(p.phone ? formatPhone(p.phone) : '')
+  const [h, setH] = useState(p.handle)
   const handle = cleanHandle(h)
-  const num = normalizePhone(ph)
-  const ok = kind === 'whatsapp' ? !!num : validHandle(handle)
+  const ok = validHandleFor(kind, handle)
+  const idx = NETWORKS.findIndex((n) => n.id === kind)
+  const net = NETWORKS[idx]
   return (
-    <Q title="How should a match reach you?" hint="Shared only if you both stay past five minutes." ok={ok} onNext={() => onNext(kind === 'whatsapp' ? { contactKind: kind, phone: num ?? '' } : { contactKind: kind, instagram: handle })}>
-      <div className="seg" role="radiogroup" aria-label="Contact">
-        <span className="seg-pill" style={{ transform: `translateX(${kind === 'whatsapp' ? 0 : 100}%)` }} />
-        <button type="button" role="radio" aria-checked={kind === 'whatsapp'} onClick={() => { tick(); setKind('whatsapp') }}>WhatsApp</button>
-        <button type="button" role="radio" aria-checked={kind === 'instagram'} onClick={() => { tick(); setKind('instagram') }}>Instagram</button>
+    <Q title="Where can a match find you?" hint="Shared only if you both want to keep talking after five minutes." ok={ok} onNext={() => onNext({ contactKind: kind, handle })}>
+      <div className="seg three" role="radiogroup" aria-label="Network">
+        <span className="seg-pill" style={{ transform: `translateX(${idx * 100}%)` }} />
+        {NETWORKS.map((n) => (
+          <button key={n.id} type="button" role="radio" aria-checked={kind === n.id} onClick={() => { tick(); setKind(n.id); onLive({ contactKind: n.id, handle: cleanHandle(h) }) }}>{n.label}</button>
+        ))}
       </div>
-      {kind === 'whatsapp' ? (
-        <>
-          <label className="sr" htmlFor="ph">WhatsApp number</label>
-          <div className="ob-field big"><span aria-hidden="true">+234</span><input id="ph" data-autofocus type="tel" inputMode="tel" autoComplete="tel-national" placeholder="801 234 5678" value={ph} onChange={(e) => { setPh(e.target.value); onLive({ contactKind: 'whatsapp', phone: normalizePhone(e.target.value) ?? partialPhone(e.target.value) }) }} /></div>
-          <p className="ob-hint">Only the person you both choose to keep talking to sees it.</p>
-        </>
-      ) : (
-        <>
-          <label className="sr" htmlFor="ig">Instagram handle</label>
-          <div className="ob-field"><span aria-hidden="true">@</span><input id="ig" data-autofocus autoCapitalize="none" autoCorrect="off" value={h.replace(/^@/, '')} onChange={(e) => { setH(e.target.value); onLive({ contactKind: 'instagram', instagram: cleanHandle(e.target.value) }) }} /></div>
-        </>
-      )}
+      <label className="sr" htmlFor="hd">{net.label} username</label>
+      <div className="ob-field big"><span aria-hidden="true">{net.prefix}</span><input id="hd" data-autofocus autoCapitalize="none" autoCorrect="off" spellCheck={false} placeholder="username" value={h.replace(/^@/, '')} onChange={(e) => { setH(e.target.value); onLive({ contactKind: kind, handle: cleanHandle(e.target.value) }) }} /></div>
+      <p className="ob-hint">Only the person you both choose to keep talking to sees it.</p>
     </Q>
   )
 }

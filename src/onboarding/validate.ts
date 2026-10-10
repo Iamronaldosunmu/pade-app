@@ -28,5 +28,13 @@ export function cleanHandle(input: string): string {
 }
 export const validHandle = (h: string) => /^[A-Za-z0-9._]{1,30}$/.test(h)
 
+/** Each network has its own rules for handles. */
+const HANDLE_RULES: Record<'instagram' | 'x' | 'snapchat', RegExp> = {
+  instagram: /^[A-Za-z0-9._]{1,30}$/,
+  x: /^[A-Za-z0-9_]{1,15}$/,
+  snapchat: /^[A-Za-z][A-Za-z0-9._-]{2,14}$/,
+}
+export const validHandleFor = (kind: keyof typeof HANDLE_RULES, h: string) => HANDLE_RULES[kind].test(h)
+
 export const cleanName = (s: string) => s.trim().replace(/\s+/g, ' ')
 export const validName = (s: string) => cleanName(s).length >= 1 && cleanName(s).length <= 24

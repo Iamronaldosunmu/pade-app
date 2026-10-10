@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { cleanHandle, isAdult, normalizePhone, parseAge, validHandle, validName } from './validate'
+import { cleanHandle, isAdult, normalizePhone, parseAge, validHandle, validHandleFor, validName } from './validate'
 import { nextSession, sessionIcs, sessionLabel } from './session-time'
 import { toPerson } from './toPerson'
 import { compatibility } from '../engine/pairing'
@@ -28,6 +28,10 @@ describe('age and names', () => {
     expect(cleanHandle(' @tomi.designs ')).toBe('tomi.designs')
     expect(validHandle('tomi.designs')).toBe(true)
     expect(validHandle('no spaces')).toBe(false)
+    expect(validHandleFor('x', 'a'.repeat(16))).toBe(false)
+    expect(validHandleFor('x', 'tomi_k')).toBe(true)
+    expect(validHandleFor('snapchat', 'ab')).toBe(false)
+    expect(validHandleFor('snapchat', 'tomi-k')).toBe(true)
   })
 })
 

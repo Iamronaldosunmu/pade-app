@@ -248,3 +248,6 @@
 .tk-work { margin-top: 4px; font: 700 14px/1.2 var(--text); overflow-wrap: anywhere; }
 
 .ticket.full .tk-take { margin-top: 12px; font: italic 700 19px/1.25 var(--text); }
+
+.seg.three { grid-template-columns: repeat(3, 1fr); }
+.seg.three .seg-pill { width: calc((100% - 10px) / 3); }
