@@ -3,6 +3,17 @@ import type { Profile } from './types'
 /** Where the invite link goes once there is a real domain. Left empty, the card shows only the schedule. */
 export const INVITE_LINK = ''
 
+export type ShareStyle = 'cream' | 'gold' | 'night'
+export type ShareStamp = 'none' | 'in' | 'friday'
+export interface ShareOpts { style: ShareStyle; stamp: ShareStamp; words: boolean }
+export const DEFAULT_SHARE: ShareOpts = { style: 'cream', stamp: 'in', words: true }
+const STYLES: Record<ShareStyle, { paper: string; ink: string; sub: string }> = {
+  cream: { paper: '#efe6cf', ink: '#1d1608', sub: 'rgba(29,22,8,0.6)' },
+  gold: { paper: '#ffc24a', ink: '#1a1203', sub: 'rgba(26,18,3,0.65)' },
+  night: { paper: '#1b1e25', ink: '#f4f2ed', sub: 'rgba(244,242,237,0.6)' },
+}
+const STAMPS: Record<Exclude<ShareStamp, 'none'>, string[]> = { in: ["I'M", 'GOING'], friday: ['SEE YOU', 'FRIDAY'] }
+
 export const SHARE_W = 1080
 export const SHARE_H = 1920
 
@@ -40,7 +51,7 @@ function wrap(ctx: Ctx, text: string, max: number): string[] {
 }
 
 /** Story-sized (9:16) card for "I just signed up for Pàdé". Shows a first name and three words only: no age, area, contact or photo. */
-export async function drawShareCard(profile: Profile, canvas: HTMLCanvasElement = document.createElement('canvas')): Promise<HTMLCanvasElement> {
+export async function drawShareCard(profile: Profile, canvas: HTMLCanvasElement = document.createElement('canvas'), opts: ShareOpts = DEFAULT_SHARE): Promise<HTMLCanvasElement> {
   try {
     await Promise.all([
       document.fonts.load('900 96px Archivo'),
@@ -55,6 +66,7 @@ export async function drawShareCard(profile: Profile, canvas: HTMLCanvasElement 
   const ctx = canvas.getContext('2d')
   if (!ctx) return canvas
   const cx = SHARE_W / 2
+  const st = STYLES[opts.style]
   const HANKEN = '"Hanken Grotesk", system-ui, sans-serif'
   const ARCHIVO = 'Archivo, "Arial Narrow", Arial, sans-serif'
   const MONO = '"DM Mono", ui-monospace, monospace'
@@ -101,12 +113,12 @@ export async function drawShareCard(profile: Profile, canvas: HTMLCanvasElement 
   ctx.shadowBlur = 80
   ctx.shadowOffsetY = 36
   roundRect(ctx, -tw / 2, -th / 2, tw, th, 38)
-  ctx.fillStyle = '#efe6cf'
+  ctx.fillStyle = st.paper
   ctx.fill()
   ctx.shadowColor = 'transparent'
   ctx.textAlign = 'left'
   const left = -tw / 2 + 56
-  ctx.fillStyle = 'rgba(29,22,8,0.6)'
+  ctx.fillStyle = st.sub
   font(ctx, 500, 24, MONO, 'normal', '3px')
   ctx.fillText('PÀDÉ · ADMIT ONE', left, -th / 2 + 70)
 
@@ -114,25 +126,25 @@ export async function drawShareCard(profile: Profile, canvas: HTMLCanvasElement 
   const name = (profile.name || 'You').toUpperCase()
   let size = 150
   font(ctx, 900, size, ARCHIVO, 'extra-condensed', '0px')
-  const room = tw - 56 - 56 - 190
+  const room = tw - 56 - 56 - (opts.stamp === 'none' ? 0 : 190)
   while (ctx.measureText(name).width > room && size > 60) { size -= 4; font(ctx, 900, size, ARCHIVO, 'extra-condensed', '0px') }
-  ctx.fillStyle = '#1d1608'
+  ctx.fillStyle = st.ink
   ctx.fillText(name, left, -th / 2 + 70 + 20 + size * 0.85)
 
   // three words
   let tx = left
   const tagY = th / 2 - 56
   font(ctx, 800, 28, HANKEN, 'normal', '0px')
-  for (const word of profile.you.slice(0, 3)) {
+  for (const word of opts.words ? profile.you.slice(0, 3) : []) {
     const w = ctx.measureText(word).width + 40
     ctx.save()
     ctx.translate(tx + w / 2, tagY)
     ctx.rotate(((word.length % 3) - 1) * 0.03)
     roundRect(ctx, -w / 2, -26, w, 52, 12)
     ctx.lineWidth = 3
-    ctx.strokeStyle = '#241d0e'
+    ctx.strokeStyle = st.ink
     ctx.stroke()
-    ctx.fillStyle = '#241d0e'
+    ctx.fillStyle = st.ink
     ctx.textAlign = 'center'
     ctx.fillText(word, 0, 10)
     ctx.restore()
@@ -140,18 +152,22 @@ export async function drawShareCard(profile: Profile, canvas: HTMLCanvasElement 
   }
 
   // stamp
-  ctx.save()
-  ctx.translate(tw / 2 - 56 - 70, 6)
-  ctx.rotate((-8 * Math.PI) / 180)
-  roundRect(ctx, -70, -62, 140, 124, 12)
-  ctx.lineWidth = 5
-  ctx.strokeStyle = '#b3261e'
-  ctx.stroke()
-  ctx.fillStyle = '#b3261e'
-  ctx.textAlign = 'center'
-  font(ctx, 900, 38, ARCHIVO, 'extra-condensed', '0px')
-  ;['FIRST', 'FRIDAY', 'FREE'].forEach((l, i) => ctx.fillText(l, 0, -18 + i * 38))
-  ctx.restore()
+  if (opts.stamp !== 'none') {
+    const lines = STAMPS[opts.stamp]
+    const red = opts.style === 'night' ? '#ff6b61' : '#b3261e'
+    ctx.save()
+    ctx.translate(tw / 2 - 56 - 70, 6)
+    ctx.rotate((-8 * Math.PI) / 180)
+    roundRect(ctx, -70, -50, 140, 100, 12)
+    ctx.lineWidth = 5
+    ctx.strokeStyle = red
+    ctx.stroke()
+    ctx.fillStyle = red
+    ctx.textAlign = 'center'
+    font(ctx, 900, 38, ARCHIVO, 'extra-condensed', '0px')
+    lines.forEach((l, i) => ctx.fillText(l, 0, -4 + i * 40))
+    ctx.restore()
+  }
   ctx.restore()
 
   // footer

@@ -33,7 +33,6 @@ export function Ticket({ profile, when, full, printed, enter }: { profile: Profi
         <span className={`tk-photo${profile.hasPhoto ? ' sealed' : ''}`} aria-hidden="true">
           {profile.hasPhoto ? 'sealed' : 'photo'}
         </span>
-        {printed && <span className="tk-free">First Friday free</span>}
       </div>
     </div>
   )

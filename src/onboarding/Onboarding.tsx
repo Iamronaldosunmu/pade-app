@@ -4,7 +4,7 @@ import { firstName, PROVIDERS, signIn, type Provider } from './auth'
 import { chime, reducedMotion, thud, tick } from './feel'
 import { Pick } from './Pick'
 import { Ticket } from './Ticket'
-import { canvasBlob, drawShareCard, INVITE_LINK } from './shareCard'
+import { canvasBlob, drawShareCard, INVITE_LINK, DEFAULT_SHARE, type ShareOpts } from './shareCard'
 import { nextSession, sessionIcs } from './session-time'
 import { emptyProfile, type Profile } from './types'
 import { cleanHandle, cleanName, formatPhone, isAdult, normalizePhone, parseAge, validHandle, validName } from './validate'
@@ -216,7 +216,7 @@ function Contact({ p, onNext }: { p: Profile; onNext: (patch: Partial<Profile>) 
   const ok = kind === 'whatsapp' ? !!num : validHandle(handle)
   return (
     <Q title="How should a match reach you?" hint="Shared only if you both stay past five minutes." ok={ok} onNext={() => onNext(kind === 'whatsapp' ? { contactKind: kind, phone: num ?? '' } : { contactKind: kind, instagram: handle })}>
-      <div className="seg" role="radiogroup" aria-label="Contact">
+      <div className="shr-opt" role="radiogroup" aria-label="Contact">
         <span className="seg-pill" style={{ transform: `translateX(${kind === 'whatsapp' ? 0 : 100}%)` }} />
         <button type="button" role="radio" aria-checked={kind === 'whatsapp'} onClick={() => { tick(); setKind('whatsapp') }}>WhatsApp</button>
         <button type="button" role="radio" aria-checked={kind === 'instagram'} onClick={() => { tick(); setKind('instagram') }}>Instagram</button>
@@ -302,7 +302,9 @@ function Final({ p, when, onPractice }: { p: Profile; when: Date; onPractice: ()
   useEffect(() => { thud() }, [])
   const card = useRef<HTMLCanvasElement>(null)
   const [note, setNote] = useState('')
-  useEffect(() => { if (card.current) void drawShareCard(p, card.current) }, [p])
+  const [custom, setCustom] = useState(false)
+  const [opts, setOpts] = useState<ShareOpts>(DEFAULT_SHARE)
+  useEffect(() => { if (custom && card.current) void drawShareCard(p, card.current, opts) }, [p, opts, custom])
   const addCal = () => {
     const blob = new Blob([sessionIcs(when)], { type: 'text/calendar' })
     const a = document.createElement('a')
@@ -314,7 +316,7 @@ function Final({ p, when, onPractice }: { p: Profile; when: Date; onPractice: ()
   const share = async () => {
     if (!card.current) return
     try {
-      const blob = await canvasBlob(await drawShareCard(p, card.current))
+      const blob = await canvasBlob(await drawShareCard(p, card.current, opts))
       const file = new File([blob], 'pade-ticket.png', { type: 'image/png' })
       const text = `I just signed up for Pàdé. Five minutes with a new person, Fridays 9 to 10pm in Lagos.${INVITE_LINK ? ` ${INVITE_LINK}` : ''}`
       if (navigator.canShare?.({ files: [file] })) {
@@ -331,15 +333,39 @@ function Final({ p, when, onPractice }: { p: Profile; when: Date; onPractice: ()
       if ((e as Error).name !== 'AbortError') setNote('Could not share that. Try again.')
     }
   }
+  const pick = <K extends keyof ShareOpts>(k: K, v: ShareOpts[K]) => setOpts((o) => ({ ...o, [k]: v }))
+  const seg = <K extends 'style' | 'stamp'>(k: K, label: string, items: [ShareOpts[K], string][]) => (
+    <div className="shr-opt" role="group" aria-label={label}>
+      <span className="shr-l">{label}</span>
+      {items.map(([v, t]) => <button key={t} aria-pressed={opts[k] === v} onClick={() => pick(k, v)}>{t}</button>)}
+    </div>
+  )
+  if (!custom) {
+    return (
+      <div className="ob-q ob-final">
+        <Head title={`You are in, ${p.name}.`} hint="Your first Friday is completely free. This is your ticket. Make it yours, then tell someone you are coming." />
+        <div className="ob-foot">
+          <button className="ob-next" data-autofocus onClick={() => setCustom(true)}>Customize and share</button>
+          <button className="ob-link" onClick={addCal}>Add to calendar</button>
+          <button className="ob-link" onClick={onPractice}>Try a practice call</button>
+        </div>
+      </div>
+    )
+  }
   return (
     <div className="ob-q ob-final">
-      <Head title={`You are in, ${p.name}.`} hint="Your first Friday is completely free. Tell someone you are coming." />
+      <Head title="Make it yours." hint="This is what people see when you share it. Only your first name." />
       <canvas className="share-card" ref={card} role="img" aria-label="Your Pàdé ticket, ready to share" />
+      {seg('style', 'Colour', [['cream', 'Cream'], ['gold', 'Gold'], ['night', 'Night']])}
+      {seg('stamp', 'Stamp', [['in', "I'm going"], ['friday', 'See you Friday'], ['none', 'None']])}
+      <div className="shr-opt" role="group" aria-label="Three words">
+        <span className="shr-l">Words</span>
+        <button aria-pressed={opts.words} onClick={() => pick('words', !opts.words)}>{opts.words ? 'Shown' : 'Hidden'}</button>
+      </div>
       <div className="ob-foot">
         <button className="ob-next" data-autofocus onClick={share}>Share my ticket</button>
         {note && <p className="ob-why" role="status">{note}</p>}
-        <button className="ob-link" onClick={addCal}>Add to calendar</button>
-        <button className="ob-link" onClick={onPractice}>Try a practice call</button>
+        <button className="ob-link" onClick={() => setCustom(false)}>Back to my ticket</button>
       </div>
     </div>
   )
