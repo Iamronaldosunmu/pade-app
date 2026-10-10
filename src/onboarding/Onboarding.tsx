@@ -4,6 +4,7 @@ import { firstName, PROVIDERS, signIn, type Provider } from './auth'
 import { chime, reducedMotion, thud, tick } from './feel'
 import { Pick } from './Pick'
 import { Ticket } from './Ticket'
+import { canvasBlob, drawShareCard, INVITE_LINK } from './shareCard'
 import { nextSession, sessionIcs } from './session-time'
 import { emptyProfile, type Profile } from './types'
 import { cleanHandle, cleanName, formatPhone, isAdult, normalizePhone, parseAge, validHandle, validName } from './validate'
@@ -299,6 +300,9 @@ function Buzzer({ onNext }: { onNext: () => void }) {
 
 function Final({ p, when, onPractice }: { p: Profile; when: Date; onPractice: () => void }) {
   useEffect(() => { thud() }, [])
+  const card = useRef<HTMLCanvasElement>(null)
+  const [note, setNote] = useState('')
+  useEffect(() => { if (card.current) void drawShareCard(p, card.current) }, [p])
   const addCal = () => {
     const blob = new Blob([sessionIcs(when)], { type: 'text/calendar' })
     const a = document.createElement('a')
@@ -307,12 +311,34 @@ function Final({ p, when, onPractice }: { p: Profile; when: Date; onPractice: ()
     a.click()
     setTimeout(() => URL.revokeObjectURL(a.href), 1000)
   }
+  const share = async () => {
+    if (!card.current) return
+    try {
+      const blob = await canvasBlob(await drawShareCard(p, card.current))
+      const file = new File([blob], 'pade-ticket.png', { type: 'image/png' })
+      const text = `I just signed up for Pàdé. Five minutes with a new person, Fridays 9 to 10pm in Lagos.${INVITE_LINK ? ` ${INVITE_LINK}` : ''}`
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], text })
+        return
+      }
+      const a = document.createElement('a')
+      a.href = URL.createObjectURL(blob)
+      a.download = 'pade-ticket.png'
+      a.click()
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000)
+      setNote('Saved. Post it wherever you like.')
+    } catch (e) {
+      if ((e as Error).name !== 'AbortError') setNote('Could not share that. Try again.')
+    }
+  }
   return (
     <div className="ob-q ob-final">
-      <Head title={`You are in, ${p.name}.`} hint="Your first Friday is completely free." />
-      <Ticket profile={p} when={when} full printed />
+      <Head title={`You are in, ${p.name}.`} hint="Your first Friday is completely free. Tell someone you are coming." />
+      <canvas className="share-card" ref={card} role="img" aria-label="Your Pàdé ticket, ready to share" />
       <div className="ob-foot">
-        <button className="ob-next" data-autofocus onClick={addCal}>Add to calendar</button>
+        <button className="ob-next" data-autofocus onClick={share}>Share my ticket</button>
+        {note && <p className="ob-why" role="status">{note}</p>}
+        <button className="ob-link" onClick={addCal}>Add to calendar</button>
         <button className="ob-link" onClick={onPractice}>Try a practice call</button>
       </div>
     </div>
