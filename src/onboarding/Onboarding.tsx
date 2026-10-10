@@ -193,7 +193,7 @@ function Takes({ value, onLive, onNext }: { value: string[]; onLive: (v: string[
   const ok = a.trim().length >= 3
   const live = (x: string, y: string) => onLive([x.trim(), y.trim()].filter(Boolean))
   return (
-    <Q title="Say something people can argue with." hint="A hot take. It goes on your ticket." ok={ok} onNext={() => onNext([a.trim(), b.trim()].filter(Boolean))}>
+    <Q title="What is your hot take?" hint="Say something people can argue with. It goes on your ticket." ok={ok} onNext={() => onNext([a.trim(), b.trim()].filter(Boolean))}>
       <label className="sr" htmlFor="t1">Hot take</label>
       <textarea id="t1" className="ob-input take" data-autofocus rows={2} maxLength={90} value={a} onChange={(e) => { setA(e.target.value); live(e.target.value, b) }} placeholder="Jollof is better when it is a little burnt." />
       <div className="ob-row">
