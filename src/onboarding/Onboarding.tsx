@@ -189,23 +189,33 @@ function Work({ value, onLive, onNext }: { value: string; onLive: (v: string) =>
 function Takes({ value, onLive, onNext }: { value: string[]; onLive: (v: string[]) => void; onNext: (v: string[]) => void }) {
   const [a, setA] = useState(value[0] ?? '')
   const [b, setB] = useState(value[1] ?? '')
+  const [two, setTwo] = useState(!!value[1])
   const [idea, setIdea] = useState(0)
   const ok = a.trim().length >= 3
   const live = (x: string, y: string) => onLive([x.trim(), y.trim()].filter(Boolean))
+  const second = useRef<HTMLTextAreaElement>(null)
   return (
     <Q title="What is your hot take?" hint="Say something people can argue with. It goes on your ticket." ok={ok} onNext={() => onNext([a.trim(), b.trim()].filter(Boolean))}>
-      <label className="sr" htmlFor="t1">Hot take</label>
-      <textarea id="t1" className="ob-input take" data-autofocus rows={2} maxLength={90} value={a} onChange={(e) => { setA(e.target.value); live(e.target.value, b) }} placeholder="Jollof is better when it is a little burnt." />
-      <div className="ob-row">
-        <button type="button" className="ob-link" onClick={() => { tick(); const t = TAKE_IDEAS[idea % TAKE_IDEAS.length]; setA(t); live(t, b); setIdea(idea + 1) }}>Need an idea?</button>
-        <span className="ob-count">{a.length}/90</span>
+      <div className="takes">
+        <div className="take-card">
+          <label className="take-tag" htmlFor="t1"><i>1</i>Your take</label>
+          <textarea id="t1" data-autofocus rows={2} maxLength={90} value={a} onChange={(e) => { setA(e.target.value); live(e.target.value, b) }} placeholder="Jollof is better when it is a little burnt." />
+          <div className="take-foot">
+            <button type="button" className="ob-link" onClick={() => { tick(); const t = TAKE_IDEAS[idea % TAKE_IDEAS.length]; setA(t); live(t, b); setIdea(idea + 1) }}>Need an idea?</button>
+            <span className="ob-count">{a.length}/90</span>
+          </div>
+        </div>
+        {two ? (
+          <div className="take-card more">
+            <label className="take-tag" htmlFor="t2"><i>2</i>Another one <em>optional</em></label>
+            <button type="button" className="take-x" aria-label="Remove second take" onClick={() => { tick(); setTwo(false); setB(''); live(a, '') }}>×</button>
+            <textarea id="t2" ref={second} rows={2} maxLength={90} value={b} onChange={(e) => { setB(e.target.value); live(a, e.target.value) }} placeholder="A second one, if you have it." />
+            <div className="take-foot"><span /><span className="ob-count">{b.length}/90</span></div>
+          </div>
+        ) : (
+          ok && <button type="button" className="take-add" onClick={() => { tick(); setTwo(true); setTimeout(() => second.current?.focus(), 30) }}>+ Add a second take</button>
+        )}
       </div>
-      {a.trim() && (
-        <>
-          <label className="sr" htmlFor="t2">Second take, optional</label>
-          <textarea id="t2" className="ob-input take second" rows={2} maxLength={90} value={b} onChange={(e) => { setB(e.target.value); live(a, e.target.value) }} placeholder="One more, if you have it (optional)" />
-        </>
-      )}
     </Q>
   )
 }
