@@ -209,9 +209,9 @@ function Takes({ value, onLive, onNext, onSpark }: { onSpark: () => void; value:
     setFx((n) => n + 1)
     cancelAnimationFrame(raf.current)
     if (reducedMotion()) { setA(t); live(t, b); return }
-    const GLYPHS = 'abcdefghijklmnopqrstuvwxyz?!#%&*'
+    const GLYPHS = 'abcdefghijklmnopqrstuvwxyz'
     const start = performance.now()
-    const dur = 900
+    const dur = 600
     setBusy(true)
     const step = (now: number) => {
       const k = Math.min(1, (now - start) / dur)
