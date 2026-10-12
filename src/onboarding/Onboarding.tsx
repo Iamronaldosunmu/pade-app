@@ -131,7 +131,7 @@ function Welcome({ onSignedIn }: { onSignedIn: (id: Awaited<ReturnType<typeof si
         {PROVIDERS.map((pr, k) => (
           <button key={pr.id} className={`auth-btn${busy === pr.id ? ' busy' : ''}`} data-autofocus={k === 0 ? '' : undefined} aria-disabled={busy !== null && busy !== pr.id} onClick={() => go(pr.id)}>
             <span className="auth-glyph">{GLYPH[pr.id]}</span>
-            <span className="auth-label">{busy === pr.id ? 'Connecting…' : `Continue with ${pr.label}`}</span>
+            <span className="auth-label"><span className="al" data-on={busy !== pr.id}>{`Continue with ${pr.label}`}</span><span className="al" data-on={busy === pr.id} aria-hidden={busy !== pr.id}>Connecting…</span></span>
             {busy === pr.id && <span className="auth-spin" aria-hidden="true" />}
           </button>
         ))}

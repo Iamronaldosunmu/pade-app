@@ -287,3 +287,8 @@
 .spk { animation: spin 0.8s var(--ease) both; }
 @keyframes spin { from { transform: rotate(-200deg) scale(0.4); } 60% { transform: rotate(20deg) scale(1.4); } to { transform: none; } }
 @media (prefers-reduced-motion: reduce) { .sweep::before, .take-card.busy::after, .spk { animation: none; } }
+
+/* Both labels share one cell, so the button never changes width and nothing shifts when it starts loading. */
+.auth-label { display: inline-grid; text-align: center; }
+.auth-label .al { grid-area: 1 / 1; transition: opacity 0.2s; }
+.auth-label .al[data-on='false'] { opacity: 0; }
