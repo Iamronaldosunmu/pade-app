@@ -32,6 +32,7 @@ export function Onboarding({ onPractice }: { onPractice: () => void }) {
   const saved = useState(loadProgress)[0]
   const [i, setI] = useState(saved.i)
   const [p, setP] = useState<Profile>(saved.p)
+  const [cl, setCl] = useState<ContactLayout>(loadLayout)
   const [spark, setSpark] = useState(0) // bumped when a new idea is generated, so the ticket can react
   const when = useState(() => nextSession(new Date()))[0]
   const step = STEPS[i]
@@ -73,12 +74,18 @@ export function Onboarding({ onPractice }: { onPractice: () => void }) {
         {step === 'area' && <Area value={p.area} onLive={(area) => set({ area })} onNext={(v) => { set({ area: v }); next() }} />}
         {step === 'work' && <Work value={p.work} onLive={(work) => set({ work })} onNext={(work) => { set({ work }); next() }} />}
         {step === 'takes' && <Takes onSpark={() => setSpark((n) => n + 1)} value={p.takes} onLive={(takes) => set({ takes })} onNext={(takes) => { set({ takes }); next() }} />}
-        {step === 'contact' && <Contact p={p} onLive={(patch) => set(patch)} onNext={(patch) => { set(patch); next() }} />}
+        {step === 'contact' && <Contact layout={cl} p={p} onLive={(patch) => set(patch)} onNext={(patch) => { set(patch); next() }} />}
         {step === 'photo' && <Photo has={p.hasPhoto} onNext={(hasPhoto) => { set({ hasPhoto }); next() }} />}
         {step === 'buzzer' && <Buzzer onNext={next} />}
         {step === 'ticket' && <Final p={p} when={when} onPractice={onPractice} />}
         </div>
       </div>
+      {import.meta.env.VITE_VARIANT_PREVIEW && step === 'contact' && (
+        <div className="fx-switch" role="group" aria-label="Layout (preview only)">
+          <span>Layout</span>
+          {CONTACT_LAYOUTS.map((l, n) => <button key={l.id} type="button" aria-pressed={cl === l.id} onClick={() => { setCl(l.id); try { localStorage.setItem(LAYOUT_KEY, l.id) } catch { /* storage blocked */ } }}>{n + 1} {l.label}</button>)}
+        </div>
+      )}
     </div>
   )
 }
@@ -272,30 +279,81 @@ function Takes({ value, onLive, onNext, onSpark }: { onSpark: () => void; value:
   )
 }
 
-const NETWORKS: { id: Profile['contactKind']; label: string; prefix: string }[] = [
-  { id: 'instagram', label: 'Instagram', prefix: '@' },
-  { id: 'x', label: 'X', prefix: '@' },
-  { id: 'snapchat', label: 'Snapchat', prefix: '@' },
+const NETWORKS: { id: Profile['contactKind']; label: string; domain: string }[] = [
+  { id: 'instagram', label: 'Instagram', domain: 'instagram.com/' },
+  { id: 'x', label: 'X', domain: 'x.com/' },
+  { id: 'snapchat', label: 'Snapchat', domain: 'snapchat.com/add/' },
 ]
 
-function Contact({ p, onLive, onNext }: { p: Profile; onLive: (patch: Partial<Profile>) => void; onNext: (patch: Partial<Profile>) => void }) {
+function NetIcon({ id, size = 20 }: { id: Profile['contactKind']; size?: number }) {
+  if (id === 'instagram') return <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5.5" /><circle cx="12" cy="12" r="4.2" /><circle cx="17.3" cy="6.7" r="1" fill="currentColor" stroke="none" /></svg>
+  if (id === 'x') return <svg viewBox="0 0 24 24" width={size - 2} height={size - 2} fill="currentColor" aria-hidden="true"><path d="M17.8 3h3.1l-6.8 7.7L22 21h-6.2l-4.9-6.3L5.3 21H2.2l7.3-8.3L2 3h6.4l4.4 5.8L17.8 3zm-1.1 16.2h1.7L7.4 4.7H5.6l11.1 14.5z" /></svg>
+  return <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true"><path d="M12 3c-3.3 0-5.2 2.4-5.2 5.4V11c-.9.3-1.8.2-2.3 0 .1 1.1 1.2 1.8 2.3 1.9-.4 1.2-1.5 2.4-3 3 1.2.5 2.4.6 3.4.5.4.7 1 1.3 1.6 1.6 1.1.5 2.3.5 3.2.5s2.1 0 3.2-.5c.6-.3 1.2-.9 1.6-1.6 1 .1 2.2 0 3.4-.5-1.5-.6-2.6-1.8-3-3 1.1-.1 2.2-.8 2.3-1.9-.5.2-1.4.3-2.3 0V8.4C17.2 5.4 15.3 3 12 3z" /></svg>
+}
+
+export type ContactLayout = 'link' | 'tiles' | 'big' | 'rows' | 'sentence'
+const CONTACT_LAYOUTS: { id: ContactLayout; label: string }[] = [
+  { id: 'link', label: 'Link' }, { id: 'tiles', label: 'Tiles' }, { id: 'big', label: 'Big' }, { id: 'rows', label: 'Rows' }, { id: 'sentence', label: 'Sentence' },
+]
+const LAYOUT_KEY = 'pade.contactlayout'
+const loadLayout = (): ContactLayout => {
+  try { const v = localStorage.getItem(LAYOUT_KEY); if (CONTACT_LAYOUTS.some((l) => l.id === v)) return v as ContactLayout } catch { /* storage blocked */ }
+  return 'link'
+}
+
+function Contact({ p, onLive, onNext, layout }: { p: Profile; onLive: (patch: Partial<Profile>) => void; onNext: (patch: Partial<Profile>) => void; layout: ContactLayout }) {
   const [kind, setKind] = useState(p.contactKind)
   const [h, setH] = useState(p.handle)
   const handle = cleanHandle(h)
   const ok = validHandleFor(kind, handle)
-  const idx = NETWORKS.findIndex((n) => n.id === kind)
-  const net = NETWORKS[idx]
+  const net = NETWORKS.find((n) => n.id === kind) ?? NETWORKS[0]
+  const pick = (id: Profile['contactKind']) => { tick(); setKind(id); onLive({ contactKind: id, handle: cleanHandle(h) }) }
+  const input = (cls: string) => (
+    <input id="hd" className={cls} data-autofocus autoCapitalize="none" autoCorrect="off" spellCheck={false} placeholder="username" aria-label={`${net.label} username`} value={h.replace(/^@/, '')} onChange={(e) => { setH(e.target.value); onLive({ contactKind: kind, handle: cleanHandle(e.target.value) }) }} />
+  )
+  const radio = (n: (typeof NETWORKS)[number], children: React.ReactNode, cls = '') => (
+    <button key={n.id} type="button" role="radio" className={cls} aria-checked={kind === n.id} aria-label={n.label} onClick={() => pick(n.id)}>{children}</button>
+  )
   return (
-    <Q title="Where can a match find you?" hint="Shared only if you both want to keep talking after five minutes." ok={ok} onNext={() => onNext({ contactKind: kind, handle })}>
-      <div className="seg three" role="radiogroup" aria-label="Network">
-        <span className="seg-pill" style={{ transform: `translateX(${idx * 100}%)` }} />
-        {NETWORKS.map((n) => (
-          <button key={n.id} type="button" role="radio" aria-checked={kind === n.id} onClick={() => { tick(); setKind(n.id); onLive({ contactKind: n.id, handle: cleanHandle(h) }) }}>{n.label}</button>
-        ))}
+    <Q title="Where can a match find you?" hint="Only the person you both choose to keep talking to sees it." ok={ok} onNext={() => onNext({ contactKind: kind, handle })}>
+      <div className={`cf cfl-${layout}`}>
+        {layout === 'link' && (
+          <>
+            <div className="cf-tabs" role="radiogroup" aria-label="Network">{NETWORKS.map((n) => radio(n, <><NetIcon id={n.id} size={18} />{n.label}</>))}</div>
+            <label className="cf-link"><span>{net.domain}</span>{input('')}</label>
+          </>
+        )}
+        {layout === 'tiles' && (
+          <>
+            <div className="cf-tiles" role="radiogroup" aria-label="Network">{NETWORKS.map((n) => radio(n, <><NetIcon id={n.id} size={28} /><b>{n.label}</b></>))}</div>
+            <label className="cf-card"><span>@</span>{input('')}</label>
+          </>
+        )}
+        {layout === 'big' && (
+          <>
+            <div className="cf-dots" role="radiogroup" aria-label="Network">{NETWORKS.map((n) => radio(n, <NetIcon id={n.id} size={24} />))}</div>
+            <p className="cf-name">{net.label}</p>
+            <label className="cf-big"><span>@</span>{input('')}</label>
+          </>
+        )}
+        {layout === 'rows' && (
+          <div className="cf-rows" role="radiogroup" aria-label="Network">
+            {NETWORKS.map((n) => (
+              <div key={n.id} className={`cf-row${kind === n.id ? ' on' : ''}`}>
+                {radio(n, <><NetIcon id={n.id} size={22} /><b>{n.label}</b><i aria-hidden="true" /></>)}
+                {kind === n.id && <label className="cf-in"><span>@</span>{input('')}</label>}
+              </div>
+            ))}
+          </div>
+        )}
+        {layout === 'sentence' && (
+          <>
+            <p className="cf-s">Find me on</p>
+            <div className="cf-select"><NetIcon id={kind} size={20} /><select aria-label="Network" value={kind} onChange={(e) => pick(e.target.value as Profile['contactKind'])}>{NETWORKS.map((n) => <option key={n.id} value={n.id}>{n.label}</option>)}</select></div>
+            <label className="cf-big small"><span>@</span>{input('')}</label>
+          </>
+        )}
       </div>
-      <label className="sr" htmlFor="hd">{net.label} username</label>
-      <div className="ob-field big"><span aria-hidden="true">{net.prefix}</span><input id="hd" data-autofocus autoCapitalize="none" autoCorrect="off" spellCheck={false} placeholder="username" value={h.replace(/^@/, '')} onChange={(e) => { setH(e.target.value); onLive({ contactKind: kind, handle: cleanHandle(e.target.value) }) }} /></div>
-      <p className="ob-hint">Only the person you both choose to keep talking to sees it.</p>
     </Q>
   )
 }

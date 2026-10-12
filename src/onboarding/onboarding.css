@@ -287,3 +287,65 @@
 @media (prefers-reduced-motion: reduce) { .sweep::before, .take-card.busy::after, .spk { animation: none; } }
 .ticket .tk-take.live { animation: takeIn 0.5s var(--ease) both; }
 @keyframes takeIn { from { opacity: 0.35; filter: blur(2px); } }
+
+/* contact step: five layouts to compare */
+.cf { display: flex; flex-direction: column; gap: 14px; width: 100%; text-align: left; }
+.cf input { background: none; border: 0; outline: 0; color: var(--ink); font: 600 22px var(--text); min-width: 0; width: 100%; text-align: left; }
+.cf input::placeholder { color: var(--ink-muted); opacity: 0.6; }
+.cf button[role='radio'] { transition: border-color 0.25s var(--ease), background-color 0.25s var(--ease), color 0.25s var(--ease), transform 0.2s var(--ease); }
+.cf button[role='radio']:active { transform: scale(0.97); }
+
+/* 1 link: pill tabs, field shows the profile link */
+.cf-tabs { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.cf-tabs button { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink-muted); font: 700 15px var(--text); }
+.cf-tabs button[aria-checked='true'] { background: var(--gold); border-color: var(--gold); color: var(--ground); }
+.cf-link { display: flex; align-items: center; min-height: 64px; padding: 0 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; transition: border-color 0.25s; cursor: text; }
+.cf-link:focus-within, .cf-card:focus-within, .cf-in:focus-within { border-color: var(--gold); }
+.cf-link span { color: var(--ink-muted); font: 500 16px var(--time); white-space: nowrap; }
+.cf-link input { padding-left: 2px; }
+
+/* 2 tiles */
+.cf-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.cf-tiles button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; min-height: 96px; border-radius: 18px; border: 1.5px solid var(--line); background: var(--surface); color: var(--ink-muted); }
+.cf-tiles b { font: 700 14px var(--text); }
+.cf-tiles button[aria-checked='true'] { border-color: var(--gold); color: var(--gold); background: rgba(255, 194, 74, 0.07); }
+.cf-card { display: flex; align-items: center; gap: 8px; min-height: 64px; padding: 0 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; transition: border-color 0.25s; cursor: text; }
+.cf-card span { color: var(--gold); font: 700 22px var(--text); }
+
+/* 3 big: icon dots, giant handle on an underline */
+.cf-dots { display: flex; gap: 14px; justify-content: center; }
+.cf-dots button { display: grid; place-items: center; width: 56px; height: 56px; border-radius: 50%; border: 1.5px solid var(--line); background: var(--surface); color: var(--ink-muted); }
+.cf-dots button[aria-checked='true'] { background: var(--gold); border-color: var(--gold); color: var(--ground); transform: scale(1.08); }
+.cf-name { margin: 0; text-align: center; font: 500 12px var(--time); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-muted); }
+.cf-big { display: flex; align-items: baseline; gap: 6px; padding: 4px 2px 6px; border-bottom: 2px solid var(--line); transition: border-color 0.25s; cursor: text; }
+.cf-big:focus-within { border-color: var(--gold); }
+.cf-big span { color: var(--gold); font: 700 34px var(--text); }
+.cf-big input { font-size: 34px; font-weight: 700; letter-spacing: -0.02em; }
+.cf-big.small span, .cf-big.small input { font-size: 28px; }
+
+/* 4 rows: the chosen row opens its own field */
+.cf-rows { display: flex; flex-direction: column; gap: 10px; }
+.cf-row { border: 1.5px solid var(--line); border-radius: 18px; background: var(--surface); transition: border-color 0.25s var(--ease), background-color 0.25s var(--ease); overflow: hidden; }
+.cf-row.on { border-color: var(--gold); }
+.cf-row > button { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 60px; padding: 0 18px; border: 0; background: none; color: var(--ink); text-align: left; }
+.cf-row b { flex: 1; font: 700 17px var(--text); }
+.cf-row i { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--line); transition: border-color 0.25s, background-color 0.25s, box-shadow 0.25s; }
+.cf-row.on i { border-color: var(--gold); background: var(--gold); box-shadow: inset 0 0 0 4px var(--surface); }
+.cf-in { display: flex; align-items: center; gap: 6px; margin: 0 14px 14px; padding: 0 14px; min-height: 52px; border: 1px solid var(--line); border-radius: 12px; background: var(--ground); animation: obIn 0.35s var(--ease) backwards; }
+.cf-in span { color: var(--gold); font: 700 20px var(--text); }
+
+/* 5 sentence */
+.cf-s { margin: 0; font: 700 34px/1.1 var(--text); letter-spacing: -0.02em; }
+.cf-select { position: relative; display: inline-flex; align-items: center; gap: 10px; align-self: flex-start; padding: 0 14px; min-height: 52px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); color: var(--gold); transition: border-color 0.25s; }
+.cf-select:focus-within { border-color: var(--gold); }
+.cf-select select { appearance: none; background: none; border: 0; outline: 0; color: var(--ink); font: 700 20px var(--text); padding-right: 22px; cursor: pointer; }
+.cf-select::after { content: ''; position: absolute; right: 16px; top: 50%; width: 7px; height: 7px; border-right: 2px solid var(--ink-muted); border-bottom: 2px solid var(--ink-muted); transform: translateY(-70%) rotate(45deg); pointer-events: none; }
+.cf-select option { color: #111; }
+
+@media (min-width: 900px) { .cf-s { font-size: 40px; } .cf-big input, .cf-big span { font-size: 40px; } .cf-big.small input, .cf-big.small span { font-size: 32px; } }
+
+/* preview-only variant switcher */
+.fx-switch { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 50; display: flex; align-items: center; gap: 4px; padding: 5px; border-radius: 999px; background: rgba(21, 23, 28, 0.92); border: 1px solid var(--line); backdrop-filter: blur(8px); font: 500 11px var(--time); color: var(--ink-muted); }
+.fx-switch > span, .fx-switch > label { padding: 0 8px; letter-spacing: 0.08em; text-transform: uppercase; }
+.fx-switch button { min-height: 32px; padding: 0 9px; white-space: nowrap; border-radius: 999px; border: 0; background: transparent; color: var(--ink); font: 600 13px var(--text); cursor: pointer; }
+.fx-switch button[aria-pressed='true'], .fx-switch button.on { background: var(--gold); color: var(--ground); }
