@@ -2,14 +2,13 @@ import { useEffect, useRef } from 'react'
 import type { Profile } from './types'
 import { sessionLabel } from './session-time'
 import { reducedMotion } from './feel'
-import type { IdeaFx } from './ideaFx'
 
 const MAX_TILT = 11
 
 /** The Friday ticket: it fills in as the person answers, and is the thing they keep.
  *  On hover it tilts toward the pointer with a little spring, catches the light, lifts off the page and
  *  its contents float at different depths. One rAF loop, which stops once everything has settled. */
-export function Ticket({ profile, when, full, printed, enter, spark = 0, fx = 'blur' }: { profile: Profile; when: Date; full?: boolean; printed?: boolean; enter?: boolean; spark?: number; fx?: IdeaFx }) {
+export function Ticket({ profile, when, full, printed, enter, spark = 0 }: { profile: Profile; when: Date; full?: boolean; printed?: boolean; enter?: boolean; spark?: number }) {
   const wrap = useRef<HTMLDivElement>(null)
   const glare = useRef<HTMLSpanElement>(null)
   const shade = useRef<HTMLSpanElement>(null)
@@ -74,7 +73,7 @@ export function Ticket({ profile, when, full, printed, enter, spark = 0, fx = 'b
     <span className="tk-shade" ref={shade} />
     <div className={`ticket${full ? ' full' : ''}${printed ? ' printed' : ''}${enter ? ' enter' : ''}`}>
       <span className="tk-glare" ref={glare}><i /></span>
-      {spark > 0 && fx === 'decode' && <span className="sweep" key={spark} aria-hidden="true" />}
+      {spark > 0 && <span className="sweep" key={spark} aria-hidden="true" />}
       <div className="tk-main">
         <p className="tk-kicker">Pàdé · admit one</p>
         <p className="tk-name">{profile.name || <span className="tk-ph">Your name</span>}</p>
@@ -82,13 +81,7 @@ export function Ticket({ profile, when, full, printed, enter, spark = 0, fx = 'b
           {profile.age ?? '··'} · {profile.area || '·····'}
         </p>
         {profile.work && <p className="tk-work">{profile.work}</p>}
-        {full && profile.takes[0] && (
-          <p key={spark} className={`tk-take${spark ? ` fx-${fx}` : ''}`}>
-            {'\u201C'}
-            {spark && fx === 'words' ? profile.takes[0].split(' ').map((w, i) => <span key={i} style={{ animationDelay: `${i * 55}ms` }}>{w}{' '}</span>) : profile.takes[0]}
-            {'\u201D'}
-          </p>
-        )}
+        {full && profile.takes[0] && <p key={spark} className={`tk-take${spark ? ' live' : ''}`}>“{profile.takes[0]}”</p>}
         {full && profile.takes[1] && <p className="tk-take">“{profile.takes[1]}”</p>}
         {full && contact && <p className="tk-contact">Private · {contact}</p>}
       </div>
