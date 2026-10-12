@@ -313,3 +313,69 @@
 .take-wrap.leaving { grid-template-rows: 0fr; margin-top: -12px; }
 .take-wrap.leaving > .take-card { padding-block: 0; opacity: 0; transform: translateY(-10px) scale(0.97); border-color: transparent; pointer-events: none; }
 @media (prefers-reduced-motion: reduce) { .take-wrap, .take-wrap > .take-card { transition: none; } }
+
+/* photo step: concepts for showing a photo that stays sealed */
+.ph-stage { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.ph { position: relative; display: block; width: min(240px, 72vw); cursor: pointer; color: var(--ink); }
+.ph img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.ph-empty { display: grid; place-items: center; align-content: center; gap: 8px; width: 100%; height: 100%; color: var(--ink-muted); }
+.ph-empty b { font: 700 14px var(--text); }
+.ph-chip { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 999px; background: rgba(11, 12, 15, 0.82); color: var(--ink); font: 600 12px var(--time); letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap; backdrop-filter: blur(6px); }
+.ph-note { margin: 0; display: inline-flex; align-items: center; gap: 6px; color: var(--ink-muted); font: 500 12px var(--time); letter-spacing: 0.06em; text-transform: uppercase; }
+.ph-peek { min-height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--gold); font: 700 13px var(--text); transition: border-color 0.25s var(--ease), background-color 0.25s var(--ease); }
+.ph-peek:hover, .ph-peek[aria-pressed='true'] { border-color: var(--gold); background: rgba(255, 194, 74, 0.08); }
+
+/* 1 frosted */
+.ph-frost { aspect-ratio: 1; border-radius: 28px; overflow: hidden; background: var(--surface); border: 1.5px dashed var(--line); }
+.ph-frost.got { border: 1px solid var(--line); }
+.ph-frost img { filter: blur(22px) brightness(0.85); transform: scale(1.2); transition: filter 0.5s var(--ease), transform 0.5s var(--ease); }
+.ph-frost.peek img { filter: none; transform: none; }
+.ph-frost .ph-chip { transition: opacity 0.3s; }
+.ph-frost.peek .ph-chip { opacity: 0; }
+
+/* 2 polaroid */
+.ph-polaroid { background: #f6f1e4; padding: 12px 12px 10px; border-radius: 6px; transform: rotate(-3deg); box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45); transition: transform 0.4s var(--ease); color: #3a3220; }
+.ph-polaroid:hover { transform: rotate(-1deg) translateY(-3px); }
+.ph-pic { display: block; aspect-ratio: 1; background: #dcd3bd; overflow: hidden; border-radius: 2px; }
+.ph-polaroid .ph-empty { color: #8a7f66; }
+.ph-cap { display: flex; align-items: center; justify-content: center; gap: 6px; padding-top: 10px; font: 500 13px var(--time); letter-spacing: 0.04em; }
+.ph-tape { position: absolute; top: -12px; left: 50%; width: 76px; height: 24px; transform: translateX(-50%) rotate(2deg); background: rgba(255, 194, 74, 0.85); border-radius: 2px; }
+
+/* 3 ring: a dial of 300 ticks around a round photo */
+.ph-ring { width: min(220px, 66vw); aspect-ratio: 1; display: grid; place-items: center; }
+.ph-ticks { position: absolute; inset: 0; width: 100%; height: 100%; animation: dial 40s linear infinite; }
+.ph-ticks circle { fill: none; stroke: var(--gold); stroke-width: 7; stroke-dasharray: 1.2 1.9; opacity: 0.85; }
+@keyframes dial { to { transform: rotate(360deg); } }
+.ph-disc { width: 80%; aspect-ratio: 1; border-radius: 50%; overflow: hidden; background: var(--surface); border: 1.5px dashed var(--line); }
+.ph-ring.got .ph-disc { border: 0; }
+.ph-ring .ph-chip { bottom: 4px; background: var(--gold); color: var(--ground); }
+@media (prefers-reduced-motion: reduce) { .ph-ticks { animation: none; } }
+
+/* 4 mosaic: strangers get 12 by 12 pixels */
+.ph-mosaic { aspect-ratio: 1; border-radius: 22px; overflow: hidden; background: var(--surface); border: 1.5px dashed var(--line); }
+.ph-mosaic.got { border: 1px solid var(--line); }
+.ph-mosaic .ph-pix, .ph-mosaic .ph-sharp { position: absolute; inset: 0; transition: opacity 0.45s var(--ease); }
+.ph-mosaic .ph-pix { image-rendering: pixelated; opacity: 1; }
+.ph-mosaic .ph-sharp { opacity: 0; }
+.ph-mosaic.peek .ph-pix { opacity: 0; }
+.ph-mosaic.peek .ph-sharp { opacity: 1; }
+.ph-time { position: absolute; inset: 0; display: grid; place-items: center; font: 900 64px var(--display); font-stretch: 68%; letter-spacing: 0.02em; color: #fff; text-shadow: 0 2px 18px rgba(0, 0, 0, 0.55); transition: opacity 0.3s; pointer-events: none; }
+.ph-mosaic.peek .ph-time { opacity: 0; }
+
+/* 5 curtain */
+.ph-curtain { aspect-ratio: 4 / 3; border-radius: 18px; overflow: hidden; background: var(--surface); border: 1.5px dashed var(--line); }
+.ph-curtain.got { border: 1px solid var(--line); }
+.ph-door { position: absolute; top: 0; bottom: 0; width: 50.5%; background: linear-gradient(180deg, #1d2027, #15171c); transition: transform 0.6s var(--ease); }
+.ph-door.l { left: 0; border-right: 1px solid var(--gold); }
+.ph-door.r { right: 0; border-left: 1px solid var(--gold); }
+.ph-curtain:not(.got) .ph-door { display: none; }
+.ph-curtain.peek .ph-door.l { transform: translateX(-82%); }
+.ph-curtain.peek .ph-door.r { transform: translateX(82%); }
+.ph-lock { position: absolute; left: 50%; top: 50%; width: 38px; height: 38px; margin: -19px 0 0 -19px; display: grid; place-items: center; border-radius: 50%; background: var(--gold); color: var(--ground); transition: opacity 0.3s, transform 0.4s var(--ease); }
+.ph-curtain.peek .ph-lock { opacity: 0; transform: scale(0.6); }
+
+/* preview-only variant switcher */
+.fx-switch { position: fixed; left: 50%; bottom: 12px; transform: translateX(-50%); z-index: 50; display: flex; align-items: center; gap: 2px; max-width: calc(100vw - 16px); padding: 4px; border-radius: 999px; background: rgba(21, 23, 28, 0.94); border: 1px solid var(--line); backdrop-filter: blur(8px); font: 500 10px var(--time); color: var(--ink-muted); }
+.fx-switch > span { padding: 0 6px; letter-spacing: 0.08em; text-transform: uppercase; }
+.fx-switch button { min-height: 32px; padding: 0 8px; white-space: nowrap; border-radius: 999px; border: 0; background: transparent; color: var(--ink); font: 600 12px var(--text); cursor: pointer; }
+.fx-switch button[aria-pressed='true'] { background: var(--gold); color: var(--ground); }

@@ -32,6 +32,7 @@ export function Onboarding({ onPractice }: { onPractice: () => void }) {
   const saved = useState(loadProgress)[0]
   const [i, setI] = useState(saved.i)
   const [p, setP] = useState<Profile>(saved.p)
+  const [pv, setPv] = useState<PhotoVariant>(loadPhotoVariant)
   const [spark, setSpark] = useState(0) // bumped when a new idea is generated, so the ticket can react
   const when = useState(() => nextSession(new Date()))[0]
   const step = STEPS[i]
@@ -74,11 +75,17 @@ export function Onboarding({ onPractice }: { onPractice: () => void }) {
         {step === 'work' && <Work value={p.work} onLive={(work) => set({ work })} onNext={(work) => { set({ work }); next() }} />}
         {step === 'takes' && <Takes onSpark={() => setSpark((n) => n + 1)} value={p.takes} onLive={(takes) => set({ takes })} onNext={(takes) => { set({ takes }); next() }} />}
         {step === 'contact' && <Contact p={p} onLive={(patch) => set(patch)} onNext={(patch) => { set(patch); next() }} />}
-        {step === 'photo' && <Photo photo={p.photo} onLive={(photo) => set({ photo, hasPhoto: !!photo })} onNext={() => next()} />}
+        {step === 'photo' && <Photo variant={pv} photo={p.photo} onLive={(photo) => set({ photo, hasPhoto: !!photo })} onNext={() => next()} />}
         {step === 'buzzer' && <Buzzer onNext={next} />}
         {step === 'ticket' && <Final p={p} when={when} onPractice={onPractice} />}
         </div>
       </div>
+      {import.meta.env.VITE_VARIANT_PREVIEW && step === 'photo' && (
+        <div className="fx-switch" role="group" aria-label="Photo concept (preview only)">
+          <span>Concept</span>
+          {PHOTO_VARIANTS.map((l, n) => <button key={l.id} type="button" aria-pressed={pv === l.id} onClick={() => { setPv(l.id); try { localStorage.setItem(PHOTO_KEY, l.id) } catch { /* storage blocked */ } }}>{n + 1} {l.label}</button>)}
+        </div>
+      )}
     </div>
   )
 }
@@ -341,22 +348,86 @@ function shrinkPhoto(file: File, size = 160): Promise<string> {
   })
 }
 
-function Photo({ photo, onLive, onNext }: { photo: string; onLive: (photo: string) => void; onNext: () => void }) {
+export type PhotoVariant = 'frost' | 'polaroid' | 'ring' | 'mosaic' | 'curtain'
+const PHOTO_VARIANTS: { id: PhotoVariant; label: string }[] = [
+  { id: 'frost', label: 'Frosted' }, { id: 'polaroid', label: 'Polaroid' }, { id: 'ring', label: 'Ring' }, { id: 'mosaic', label: 'Mosaic' }, { id: 'curtain', label: 'Curtain' },
+]
+const PHOTO_KEY = 'pade.photovariant'
+const loadPhotoVariant = (): PhotoVariant => {
+  try { const v = localStorage.getItem(PHOTO_KEY); if (PHOTO_VARIANTS.some((l) => l.id === v)) return v as PhotoVariant } catch { /* storage blocked */ }
+  return 'frost'
+}
+
+function Lock({ size = 14 }: { size?: number }) {
+  return <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2.5" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>
+}
+function Camera({ size = 28 }: { size?: number }) {
+  return <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 8h3l1.5-2h7L17 8h3v11H4z" /><circle cx="12" cy="13" r="3.5" /></svg>
+}
+
+/** A 12 by 12 copy of the photo, blown back up with hard edges: what a stranger would get. */
+function useMosaic(photo: string) {
+  const [m, setM] = useState('')
+  useEffect(() => {
+    if (!photo) return
+    const img = new Image()
+    img.onload = () => {
+      const c = document.createElement('canvas')
+      c.width = c.height = 12
+      c.getContext('2d')?.drawImage(img, 0, 0, 12, 12)
+      setM(c.toDataURL('image/png'))
+    }
+    img.src = photo
+  }, [photo])
+  return photo ? m : ''
+}
+
+function Photo({ variant, photo, onLive, onNext }: { variant: PhotoVariant; photo: string; onLive: (photo: string) => void; onNext: () => void }) {
   const got = photo !== ''
+  const [peek, setPeek] = useState(false)
+  const mosaic = useMosaic(photo)
+  const peekBtn = got && (variant === 'frost' || variant === 'mosaic' || variant === 'curtain') && (
+    <button type="button" className="ph-peek" aria-pressed={peek} onClick={() => { tick(); setPeek((v) => !v) }}>{peek ? 'Hide it again' : 'Peek at it'}</button>
+  )
+  const empty = <span className="ph-empty"><Camera /><b>Add a photo</b></span>
   return (
     <form className="ob-q" onSubmit={(e) => { e.preventDefault(); onNext() }}>
       <Head title="Add a photo." hint="Nobody sees it until a conversation passes five minutes. Then it opens for both of you." />
-      <div className={`envelope${got ? ' sealed' : ''}`} aria-live="polite">
-        {photo && <img src={photo} alt="Your photo" />}
-        <span className="flap" aria-hidden="true" />
-        <span className="env-label">{got ? 'Sealed. Opens after 5:00' : 'Opens after 5:00'}</span>
+      <div className="ph-stage" aria-live="polite">
+        <label htmlFor="ph-file" className={`ph ph-${variant}${got ? ' got' : ''}${peek ? ' peek' : ''}`}>
+          {variant === 'frost' && (<>
+            {got ? <img src={photo} alt="Your photo" /> : empty}
+            {got && <span className="ph-chip"><Lock />Opens after 5:00</span>}
+          </>)}
+          {variant === 'polaroid' && (<>
+            <span className="ph-tape" aria-hidden="true" />
+            <span className="ph-pic">{got ? <img src={photo} alt="Your photo" /> : empty}</span>
+            <span className="ph-cap"><Lock size={13} />{got ? 'hidden till 5:00' : 'say cheese'}</span>
+          </>)}
+          {variant === 'ring' && (<>
+            <svg className="ph-ticks" viewBox="0 0 220 220" aria-hidden="true"><circle cx="110" cy="110" r="104" /></svg>
+            <span className="ph-disc">{got ? <img src={photo} alt="Your photo" /> : empty}</span>
+            {got && <span className="ph-chip"><Lock />5:00</span>}
+          </>)}
+          {variant === 'mosaic' && (<>
+            {got ? (<><img className="ph-sharp" src={photo} alt="Your photo" />{mosaic && <img className="ph-pix" src={mosaic} alt="" aria-hidden="true" />}</>) : empty}
+            {got && <span className="ph-time" aria-hidden="true">5:00</span>}
+          </>)}
+          {variant === 'curtain' && (<>
+            {got ? <img src={photo} alt="Your photo" /> : empty}
+            <span className="ph-door l" aria-hidden="true" /><span className="ph-door r" aria-hidden="true" />
+            {got && <span className="ph-lock" aria-hidden="true"><Lock size={18} /></span>}
+          </>)}
+        </label>
+        {peekBtn}
+        <p className="ph-note"><Lock size={12} />{got ? 'Sealed. Opens after 5:00' : 'Opens after 5:00'}</p>
       </div>
       <label className="ob-next ghost">
         {got ? 'Choose a different photo' : 'Take or choose a photo'}
-        <input type="file" accept="image/*" capture="user" className="sr" data-autofocus onChange={(e) => {
+        <input id="ph-file" type="file" accept="image/*" capture="user" className="sr" data-autofocus onChange={(e) => {
           const f = e.target.files?.[0]
           if (!f) return
-          shrinkPhoto(f).then((d) => { onLive(d); thud() }).catch(() => { /* unreadable image: keep what we had */ })
+          shrinkPhoto(f, 360).then((d) => { onLive(d); thud() }).catch(() => { /* unreadable image: keep what we had */ })
         }} />
       </label>
       <div className="ob-foot">
