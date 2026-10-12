@@ -315,7 +315,7 @@ function Contact({ p, onLive, onNext, layout }: { p: Profile; onLive: (patch: Pa
     <button key={n.id} type="button" role="radio" className={cls} aria-checked={kind === n.id} aria-label={n.label} onClick={() => pick(n.id)}>{children}</button>
   )
   return (
-    <Q title="Where can a match find you?" hint="Only the person you both choose to keep talking to sees it." ok={ok} onNext={() => onNext({ contactKind: kind, handle })}>
+    <Q title="Where can someone find you?" hint="Only the person you both choose to keep talking to sees it." ok={ok} onNext={() => onNext({ contactKind: kind, handle })}>
       <div className={`cf cfl-${layout}`}>
         {layout === 'link' && (
           <>
