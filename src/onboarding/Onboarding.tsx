@@ -16,6 +16,7 @@ const SHOW_TICKET: StepId[] = ['name', 'age', 'area', 'work', 'takes', 'contact'
 export function Onboarding({ onPractice }: { onPractice: () => void }) {
   const [i, setI] = useState(0)
   const [p, setP] = useState<Profile>(emptyProfile)
+  const [spark, setSpark] = useState(0) // bumped when a new idea is generated, so the ticket can react
   const when = useState(() => nextSession(new Date()))[0]
   const step = STEPS[i]
   const set = (patch: Partial<Profile>) => setP((x) => ({ ...x, ...patch }))
@@ -34,7 +35,7 @@ export function Onboarding({ onPractice }: { onPractice: () => void }) {
       </div>
       {step !== 'welcome' && (
         <aside className="ob-aside" aria-hidden="true">
-          <Ticket profile={p} when={when} full enter printed={step === 'ticket'} />
+          <Ticket profile={p} when={when} full enter printed={step === 'ticket'} spark={spark} />
           <p className="ob-aside-note">Your ticket, as people will see it.</p>
         </aside>
       )}
@@ -51,7 +52,7 @@ export function Onboarding({ onPractice }: { onPractice: () => void }) {
         {step === 'age' && <Age value={p.age} onLive={(age) => set({ age })} onNext={(v) => { set({ age: v }); next() }} />}
         {step === 'area' && <Area value={p.area} onLive={(area) => set({ area })} onNext={(v) => { set({ area: v }); next() }} />}
         {step === 'work' && <Work value={p.work} onLive={(work) => set({ work })} onNext={(work) => { set({ work }); next() }} />}
-        {step === 'takes' && <Takes value={p.takes} onLive={(takes) => set({ takes })} onNext={(takes) => { set({ takes }); next() }} />}
+        {step === 'takes' && <Takes onSpark={() => setSpark((n) => n + 1)} value={p.takes} onLive={(takes) => set({ takes })} onNext={(takes) => { set({ takes }); next() }} />}
         {step === 'contact' && <Contact p={p} onLive={(patch) => set(patch)} onNext={(patch) => { set(patch); next() }} />}
         {step === 'photo' && <Photo has={p.hasPhoto} onNext={(hasPhoto) => { set({ hasPhoto }); next() }} />}
         {step === 'buzzer' && <Buzzer onNext={next} />}
@@ -187,7 +188,7 @@ function Work({ value, onLive, onNext }: { value: string; onLive: (v: string) =>
   )
 }
 
-function Takes({ value, onLive, onNext }: { value: string[]; onLive: (v: string[]) => void; onNext: (v: string[]) => void }) {
+function Takes({ value, onLive, onNext, onSpark }: { onSpark: () => void; value: string[]; onLive: (v: string[]) => void; onNext: (v: string[]) => void }) {
   const [a, setA] = useState(value[0] ?? '')
   const [b, setB] = useState(value[1] ?? '')
   const [two, setTwo] = useState(!!value[1])
@@ -196,14 +197,45 @@ function Takes({ value, onLive, onNext }: { value: string[]; onLive: (v: string[
   const ok = empty || a.trim().length >= 3
   const live = (x: string, y: string) => onLive([x.trim(), y.trim()].filter(Boolean))
   const second = useRef<HTMLTextAreaElement>(null)
+  const raf = useRef(0)
+  const [fx, setFx] = useState(0)
+  const [busy, setBusy] = useState(false)
+  useEffect(() => () => cancelAnimationFrame(raf.current), [])
+  /** Decode the new idea into the field: letters shuffle, then settle left to right. */
+  const generate = () => {
+    const t = TAKE_IDEAS[idea % TAKE_IDEAS.length]
+    setIdea(idea + 1)
+    onSpark()
+    setFx((n) => n + 1)
+    cancelAnimationFrame(raf.current)
+    if (reducedMotion()) { setA(t); live(t, b); return }
+    const GLYPHS = 'abcdefghijklmnopqrstuvwxyz?!#%&*'
+    const start = performance.now()
+    const dur = 900
+    setBusy(true)
+    const step = (now: number) => {
+      const k = Math.min(1, (now - start) / dur)
+      let out = ''
+      for (let i = 0; i < t.length; i++) {
+        const settle = (i / t.length) * 0.75 + 0.12
+        out += t[i] === ' ' || k >= settle || k === 1 ? t[i] : GLYPHS[Math.floor(Math.random() * GLYPHS.length)]
+      }
+      setA(out)
+      live(out, b)
+      if (k < 1) raf.current = requestAnimationFrame(step)
+      else setBusy(false)
+    }
+    raf.current = requestAnimationFrame(step)
+  }
   return (
     <Q title="What is your hot take?" hint="Say something people can argue with. It goes on your ticket, or skip it for now." ok={ok} onNext={() => onNext([a.trim(), b.trim()].filter(Boolean))} onSkip={empty ? () => onNext([]) : undefined}>
       <div className="takes">
-        <div className="take-card">
+        <div className={`take-card${busy ? ' busy' : ''}`}>
+          {fx > 0 && <span className="sweep" key={fx} aria-hidden="true" />}
           <label className="take-tag" htmlFor="t1"><i>1</i>Your take</label>
-          <textarea id="t1" data-autofocus rows={2} maxLength={90} value={a} onChange={(e) => { setA(e.target.value); live(e.target.value, b) }} placeholder="Jollof is better when it is a little burnt." />
+          <textarea id="t1" data-autofocus rows={2} maxLength={90} value={a} onChange={(e) => { cancelAnimationFrame(raf.current); setBusy(false); setA(e.target.value); live(e.target.value, b) }} placeholder="Jollof is better when it is a little burnt." />
           <div className="take-foot">
-            <button type="button" className="ob-link" onClick={() => { tick(); const t = TAKE_IDEAS[idea % TAKE_IDEAS.length]; setA(t); live(t, b); setIdea(idea + 1) }}>Need an idea?</button>
+            <button type="button" className="ob-link idea" onClick={() => { tick(); generate() }}><svg key={fx} className="spk" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M12 2l2.2 6.3L20.5 10l-6.3 1.7L12 18l-2.2-6.3L3.5 10l6.3-1.7z" /></svg>Need an idea?</button>
             <span className="ob-count">{a.length}/90</span>
           </div>
         </div>
