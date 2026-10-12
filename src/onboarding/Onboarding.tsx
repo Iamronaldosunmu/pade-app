@@ -231,11 +231,11 @@ function Takes({ value, onLive, onNext, onSpark }: { onSpark: () => void; value:
     setFx((n) => n + 1)
     stop()
     if (reducedMotion()) { setA(t); live(t, b); return }
-    const GLYPHS = 'abcdefghijklmnopqrstuvwxyz'
+    const GLYPHS = 'abcdefghijklmnopqrstuvwxyz?!#%&*'
     const start = performance.now()
     setBusy(true)
     const step = (now: number) => {
-      const k = Math.min(1, (now - start) / 600)
+      const k = Math.min(1, (now - start) / 900)
       let out = ''
       for (let i = 0; i < t.length; i++) out += t[i] === ' ' || k >= (i / t.length) * 0.75 + 0.12 || k === 1 ? t[i] : GLYPHS[Math.floor(Math.random() * GLYPHS.length)]
       setA(out)

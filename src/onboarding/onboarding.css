@@ -272,15 +272,18 @@
 .take-add:active { transform: scale(0.98); }
 @media (min-width: 900px) { .take-card textarea { font-size: 23px; } }
 
-/* new idea: a faint band of light sweeps the card, the sparkle turns */
+/* new idea: a band of light sweeps the card, the ring pulses, the sparkle spins */
 .sweep { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; pointer-events: none; z-index: 4; }
-.sweep::before { content: ''; position: absolute; top: -20%; bottom: -20%; left: 0; width: 38%; background: linear-gradient(100deg, transparent, rgba(255, 194, 74, 0.14), rgba(255, 255, 255, 0.2), rgba(255, 194, 74, 0.14), transparent); transform: translateX(-120%) skewX(-18deg); animation: sweep 0.8s ease-out both; }
+.sweep::before { content: ''; position: absolute; top: -20%; bottom: -20%; left: 0; width: 38%; background: linear-gradient(100deg, transparent, rgba(255, 194, 74, 0.5), rgba(255, 255, 255, 0.55), rgba(255, 194, 74, 0.5), transparent); transform: translateX(-120%) skewX(-18deg); animation: sweep 0.95s var(--ease) both; }
 @keyframes sweep { to { transform: translateX(380%) skewX(-18deg); } }
-.take-card.busy textarea { color: var(--ink-muted); }
+.take-card::after { content: ''; position: absolute; inset: -1px; border-radius: inherit; pointer-events: none; opacity: 0; }
+.take-card.busy::after { animation: ring 0.9s ease-out; }
+@keyframes ring { 0% { opacity: 1; box-shadow: 0 0 0 0 rgba(255, 194, 74, 0.55); } 100% { opacity: 1; box-shadow: 0 0 0 14px rgba(255, 194, 74, 0); } }
+.take-card.busy textarea { color: var(--gold); text-shadow: 0 0 14px rgba(255, 194, 74, 0.45); }
 .take-card textarea { transition: color 0.4s; }
 .idea { display: inline-flex; align-items: center; gap: 6px; }
-.spk { animation: sparkle 0.5s var(--ease) both; }
-@keyframes sparkle { from { transform: rotate(-90deg) scale(0.7); opacity: 0.4; } to { transform: none; opacity: 1; } }
-@media (prefers-reduced-motion: reduce) { .sweep::before, .spk { animation: none; } }
+.spk { animation: sparkle 0.8s var(--ease) both; }
+@keyframes sparkle { from { transform: rotate(-200deg) scale(0.4); } 60% { transform: rotate(20deg) scale(1.4); } to { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .sweep::before, .take-card.busy::after, .spk { animation: none; } }
 .ticket .tk-take.live { animation: takeIn 0.5s var(--ease) both; }
-@keyframes takeIn { from { opacity: 0.55; } }
+@keyframes takeIn { from { opacity: 0.35; filter: blur(2px); } }
