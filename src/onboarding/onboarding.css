@@ -284,6 +284,6 @@
 .ticket .tk-take.live { animation: takeIn 0.5s var(--ease) both; }
 @keyframes takeIn { from { opacity: 0.35; filter: blur(2px); } }
 .idea { display: inline-flex; align-items: center; gap: 6px; }
-.spk { animation: spin 0.8s var(--ease) both; }
-@keyframes spin { from { transform: rotate(-200deg) scale(0.4); } 60% { transform: rotate(20deg) scale(1.4); } to { transform: none; } }
+.spk { animation: sparkle 0.8s var(--ease) both; }
+@keyframes sparkle { from { transform: rotate(-200deg) scale(0.4); } 60% { transform: rotate(20deg) scale(1.4); } to { transform: none; } }
 @media (prefers-reduced-motion: reduce) { .sweep::before, .take-card.busy::after, .spk { animation: none; } }
