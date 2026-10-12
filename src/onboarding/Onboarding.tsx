@@ -32,7 +32,6 @@ export function Onboarding({ onPractice }: { onPractice: () => void }) {
   const saved = useState(loadProgress)[0]
   const [i, setI] = useState(saved.i)
   const [p, setP] = useState<Profile>(saved.p)
-  const [sv, setSv] = useState<ShareVariant>(loadShareVariant)
   const [spark, setSpark] = useState(0) // bumped when a new idea is generated, so the ticket can react
   const when = useState(() => nextSession(new Date()))[0]
   const step = STEPS[i]
@@ -76,15 +75,9 @@ export function Onboarding({ onPractice }: { onPractice: () => void }) {
         {step === 'takes' && <Takes onSpark={() => setSpark((n) => n + 1)} value={p.takes} onLive={(takes) => set({ takes })} onNext={(takes) => { set({ takes }); next() }} />}
         {step === 'contact' && <Contact p={p} onLive={(patch) => set(patch)} onNext={(patch) => { set(patch); next() }} />}
         {step === 'photo' && <Photo photo={p.photo} onLive={(photo) => set({ photo, hasPhoto: !!photo })} onNext={() => next()} />}
-        {step === 'ticket' && <Final variant={sv} p={p} when={when} onPractice={onPractice} />}
+        {step === 'ticket' && <Final p={p} when={when} onPractice={onPractice} />}
         </div>
       </div>
-      {import.meta.env.VITE_VARIANT_PREVIEW && step === 'ticket' && (
-        <div className="fx-switch" role="group" aria-label="Share layout (preview only)">
-          <span>Layout</span>
-          {SHARE_VARIANTS.map((l, n) => <button key={l.id} type="button" aria-pressed={sv === l.id} onClick={() => { setSv(l.id); try { localStorage.setItem(SHARE_KEY, l.id) } catch { /* storage blocked */ } }}>{n + 1} {l.label}</button>)}
-        </div>
-      )}
     </div>
   )
 }
@@ -383,31 +376,20 @@ function Photo({ photo, onLive, onNext }: { photo: string; onLive: (photo: strin
   )
 }
 
-export type ShareVariant = 'studio' | 'swipe' | 'split' | 'tabs' | 'overlay'
-const SHARE_VARIANTS: { id: ShareVariant; label: string }[] = [
-  { id: 'studio', label: 'Studio' }, { id: 'swipe', label: 'Swipe' }, { id: 'split', label: 'Split' }, { id: 'tabs', label: 'Tabs' }, { id: 'overlay', label: 'Overlay' },
-]
-const SHARE_KEY = 'pade.sharevariant'
-const loadShareVariant = (): ShareVariant => {
-  try { const v = localStorage.getItem(SHARE_KEY); if (SHARE_VARIANTS.some((l) => l.id === v)) return v as ShareVariant } catch { /* storage blocked */ }
-  return 'studio'
-}
-const LOOKS: { id: ShareOpts['style']; label: string; bg: string; fg: string }[] = [
-  { id: 'cream', label: 'Cream', bg: '#efe6cf', fg: '#1d1608' },
-  { id: 'gold', label: 'Gold', bg: '#ffc24a', fg: '#1a1203' },
-  { id: 'night', label: 'Night', bg: '#1b1e25', fg: '#f4f2ed' },
-]
-const STAMP_OPTS: { id: ShareOpts['stamp']; label: string }[] = [
-  { id: 'in', label: "I'm going" }, { id: 'friday', label: 'See you Friday' }, { id: 'none', label: 'No stamp' },
+const LOOKS: { id: ShareOpts['style']; label: string; bg: string }[] = [
+  { id: 'cream', label: 'Cream', bg: '#efe6cf' },
+  { id: 'gold', label: 'Gold', bg: '#ffc24a' },
+  { id: 'night', label: 'Night', bg: '#1b1e25' },
 ]
 
-function Final({ variant, p, when, onPractice }: { variant: ShareVariant; p: Profile; when: Date; onPractice: () => void }) {
+/** One screen: your ticket as a shareable card, a colour if you care, and the share button. */
+function Final({ p, when, onPractice }: { p: Profile; when: Date; onPractice: () => void }) {
   useEffect(() => { thud() }, [])
   const card = useRef<HTMLCanvasElement>(null)
   const [note, setNote] = useState('')
-  const [custom, setCustom] = useState(false)
-  const [opts, setOpts] = useState<ShareOpts>(DEFAULT_SHARE)
-  useEffect(() => { if (custom && card.current) void drawShareCard(p, card.current, opts) }, [p, opts, custom, variant])
+  const [style, setStyle] = useState<ShareOpts['style']>(DEFAULT_SHARE.style)
+  const opts: ShareOpts = { ...DEFAULT_SHARE, style }
+  useEffect(() => { if (card.current) void drawShareCard(p, card.current, { ...DEFAULT_SHARE, style }) }, [p, style])
   const addCal = () => {
     const blob = new Blob([sessionIcs(when)], { type: 'text/calendar' })
     const a = document.createElement('a')
@@ -436,120 +418,19 @@ function Final({ variant, p, when, onPractice }: { variant: ShareVariant; p: Pro
       if ((e as Error).name !== 'AbortError') setNote('Could not share that. Try again.')
     }
   }
-  const pick = <K extends keyof ShareOpts>(k: K, v: ShareOpts[K]) => setOpts((o) => ({ ...o, [k]: v }))
-  const hasTake = p.takes.length > 0
-  const [said, setSaid] = useState('')
-  const look = LOOKS.find((l) => l.id === opts.style) ?? LOOKS[0]
-  const stampLabel = STAMP_OPTS.find((x) => x.id === opts.stamp)?.label ?? ''
-  const cycle = <T,>(list: T[], cur: T, by = 1) => list[(list.indexOf(cur) + by + list.length) % list.length]
-  const nextLook = (by: number) => { tick(); const l = cycle(LOOKS.map((x) => x.id), opts.style, by); pick('style', l); setSaid(LOOKS.find((x) => x.id === l)?.label ?? '') }
-  const nextStamp = () => { tick(); const st = cycle(STAMP_OPTS.map((x) => x.id), opts.stamp); pick('stamp', st); setSaid(STAMP_OPTS.find((x) => x.id === st)?.label ?? '') }
-  const flipTake = () => { tick(); pick('take', !opts.take); setSaid(opts.take ? 'Take hidden' : 'Take shown') }
-
-  const cv = <canvas className="share-card" ref={card} role="img" aria-label="Your Pàdé ticket, ready to share" />
-  const dots = (
-    <div className="sh-dots" role="radiogroup" aria-label="Colour">
-      {LOOKS.map((l) => <button key={l.id} type="button" role="radio" aria-checked={opts.style === l.id} aria-label={l.label} style={{ background: l.bg }} onClick={() => { tick(); pick('style', l.id) }} />)}
-    </div>
-  )
-  const chips = (
-    <div className="sh-chips" role="radiogroup" aria-label="Stamp">
-      {STAMP_OPTS.map((x) => <button key={x.id} type="button" role="radio" aria-checked={opts.stamp === x.id} onClick={() => { tick(); pick('stamp', x.id) }}>{x.label}</button>)}
-    </div>
-  )
-  const sw = hasTake && (
-    <button type="button" className="sh-switch" role="switch" aria-checked={opts.take} onClick={flipTake}>
-      <span>Show my hot take</span><i aria-hidden="true" />
-    </button>
-  )
-  const tiles = (
-    <div className="sh-tiles" role="radiogroup" aria-label="Colour">
-      {LOOKS.map((l) => <button key={l.id} type="button" role="radio" aria-checked={opts.style === l.id} onClick={() => { tick(); pick('style', l.id) }}><i style={{ background: l.bg, color: l.fg }}>Aa</i><b>{l.label}</b></button>)}
-    </div>
-  )
-  const stampTiles = (
-    <div className="sh-tiles stamps" role="radiogroup" aria-label="Stamp">
-      {STAMP_OPTS.map((x) => <button key={x.id} type="button" role="radio" aria-checked={opts.stamp === x.id} onClick={() => { tick(); pick('stamp', x.id) }}><b>{x.label}</b></button>)}
-    </div>
-  )
-  const [tab, setTab] = useState<'colour' | 'stamp' | 'take'>('colour')
-  const tabList: ['colour' | 'stamp' | 'take', string][] = [['colour', 'Colour'], ['stamp', 'Stamp'], ...(hasTake ? [['take', 'Take'] as ['take', string]] : [])]
-  const shareFoot = (
-    <div className="ob-foot">
-      <button className="ob-next" data-autofocus onClick={share}>Share my ticket</button>
-      {note && <p className="ob-why" role="status">{note}</p>}
-      <button className="ob-link" onClick={() => setCustom(false)}>Back to my ticket</button>
-    </div>
-  )
-  if (!custom) {
-    return (
-      <div className="ob-q ob-final">
-        <Head title={`You are in, ${p.name}.`} hint="This is your ticket. Make it yours, then tell someone you are coming." />
-        <div className="ob-foot">
-          <button className="ob-next" data-autofocus onClick={() => setCustom(true)}>Customize and share</button>
-          <button className="ob-link" onClick={addCal}>Add to calendar</button>
-          <button className="ob-link" onClick={onPractice}>Try a practice call</button>
-        </div>
-      </div>
-    )
-  }
-  const head = <Head title="Make it yours." hint="This is what people see when you share it. Just your first name and your hot take." />
   return (
-    <div className={`ob-q ob-final sh shv-${variant}`}>
-      {head}
-      {variant === 'studio' && (<>
-        {cv}
-        {dots}
-        {chips}
-        {sw}
-        {shareFoot}
-      </>)}
-      {variant === 'swipe' && (<>
-        <div className="sh-reel">
-          <button type="button" className="sh-arrow" aria-label="Previous colour" onClick={() => nextLook(-1)}>‹</button>
-          {cv}
-          <button type="button" className="sh-arrow" aria-label="Next colour" onClick={() => nextLook(1)}>›</button>
-        </div>
-        <p className="sh-name" aria-live="polite">{look.label}</p>
-        {chips}
-        {sw}
-        {shareFoot}
-      </>)}
-      {variant === 'split' && (
-        <div className="sh-cols">
-          <div className="sh-left">{cv}</div>
-          <div className="sh-right">
-            <p className="sh-h">Colour</p>{tiles}
-            <p className="sh-h">Stamp</p>{stampTiles}
-            {sw}
-            {shareFoot}
-          </div>
-        </div>
-      )}
-      {variant === 'tabs' && (<>
-        {cv}
-        <div className="sh-tabs" role="tablist" aria-label="What to change">
-          {tabList.map(([id, t]) => <button key={id} type="button" role="tab" aria-selected={tab === id} onClick={() => { tick(); setTab(id) }}>{t}</button>)}
-        </div>
-        <div className="sh-panel" role="tabpanel" key={tab}>
-          {tab === 'colour' && tiles}
-          {tab === 'stamp' && stampTiles}
-          {tab === 'take' && sw}
-        </div>
-        {shareFoot}
-      </>)}
-      {variant === 'overlay' && (<>
-        <div className="sh-over">
-          {cv}
-          <div className="sh-tools">
-            <button type="button" aria-label={`Colour: ${look.label}. Tap for the next one`} onClick={() => nextLook(1)}><i style={{ background: look.bg, color: look.fg }} />Colour</button>
-            <button type="button" aria-label={`Stamp: ${stampLabel}. Tap for the next one`} onClick={nextStamp}><i className="st">★</i>Stamp</button>
-            {hasTake && <button type="button" aria-label={`Hot take ${opts.take ? 'shown' : 'hidden'}. Tap to switch`} aria-pressed={opts.take} onClick={flipTake}><i className="tk">“</i>Take</button>}
-          </div>
-        </div>
-        <p className="sh-name" aria-live="polite">{said || 'Tap the buttons to change it'}</p>
-        {shareFoot}
-      </>)}
+    <div className="ob-q ob-final sh">
+      <Head title={`You are in, ${p.name}.`} hint="Share your ticket and tell someone you are coming." />
+      <canvas className="share-card" ref={card} role="img" aria-label="Your Pàdé ticket, ready to share" />
+      <div className="sh-dots" role="radiogroup" aria-label="Colour">
+        {LOOKS.map((l) => <button key={l.id} type="button" role="radio" aria-checked={style === l.id} aria-label={l.label} style={{ background: l.bg }} onClick={() => { tick(); setStyle(l.id) }} />)}
+      </div>
+      <div className="ob-foot">
+        <button className="ob-next" data-autofocus onClick={share}>Share my ticket</button>
+        {note && <p className="ob-why" role="status">{note}</p>}
+        <button className="ob-link" onClick={addCal}>Add to calendar</button>
+        <button className="ob-link" onClick={onPractice}>Try a practice call</button>
+      </div>
     </div>
   )
 }
