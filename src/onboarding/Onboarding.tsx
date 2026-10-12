@@ -212,6 +212,7 @@ function Takes({ value, onLive, onNext, onSpark }: { onSpark: () => void; value:
   const [a, setA] = useState(value[0] ?? '')
   const [b, setB] = useState(value[1] ?? '')
   const [two, setTwo] = useState(!!value[1])
+  const [leaving, setLeaving] = useState(false)
   const [idea, setIdea] = useState(0)
   const empty = a.trim() === ''
   const ok = empty || a.trim().length >= 3
@@ -258,11 +259,18 @@ function Takes({ value, onLive, onNext, onSpark }: { onSpark: () => void; value:
           </div>
         </div>
         {two ? (
+          <div className={`take-wrap${leaving ? ' leaving' : ''}`}>
           <div className="take-card more">
             <label className="take-tag" htmlFor="t2"><i>2</i>Another one <em>optional</em></label>
-            <button type="button" className="take-x" aria-label="Remove second take" onClick={() => { tick(); setTwo(false); setB(''); live(a, '') }}>×</button>
+            <button type="button" className="take-x" aria-label="Remove second take" onClick={() => {
+              tick(); live(a, '')
+              const done = () => { setTwo(false); setB(''); setLeaving(false) }
+              if (reducedMotion()) { done(); return }
+              setLeaving(true); window.setTimeout(done, 380)
+            }}>×</button>
             <textarea id="t2" ref={second} rows={2} maxLength={90} value={b} onChange={(e) => { setB(e.target.value); live(a, e.target.value) }} placeholder="A second one, if you have it." />
             <div className="take-foot"><span /><span className="ob-count">{b.length}/90</span></div>
+          </div>
           </div>
         ) : (
           !empty && ok && <button type="button" className="take-add" onClick={() => { tick(); setTwo(true); setTimeout(() => second.current?.focus(), 30) }}>+ Add a second take</button>
