@@ -13,9 +13,25 @@ type StepId = 'welcome' | 'name' | 'age' | 'area' | 'work' | 'takes' | 'contact'
 const STEPS: StepId[] = ['welcome', 'name', 'age', 'area', 'work', 'takes', 'contact', 'photo', 'buzzer', 'ticket']
 const SHOW_TICKET: StepId[] = ['name', 'age', 'area', 'work', 'takes', 'contact', 'photo']
 
+const SAVE_KEY = 'pade.onboarding.v1'
+
+/** Where the person got to, so a refresh or a return visit picks up on the same screen with their answers. */
+function loadProgress(): { i: number; p: Profile } {
+  try {
+    const raw = JSON.parse(localStorage.getItem(SAVE_KEY) ?? 'null') as { i?: number; p?: Partial<Profile> } | null
+    if (raw && typeof raw.i === 'number' && raw.i >= 0 && raw.i < STEPS.length && raw.p && typeof raw.p === 'object') {
+      // a signed-in profile is needed for anything past the welcome screen
+      if (raw.i > 0 && !raw.p.provider) return { i: 0, p: emptyProfile }
+      return { i: raw.i, p: { ...emptyProfile, ...raw.p, hasPhoto: false } } // the photo itself is not kept
+    }
+  } catch { /* storage blocked or corrupt: start fresh */ }
+  return { i: 0, p: emptyProfile }
+}
+
 export function Onboarding({ onPractice }: { onPractice: () => void }) {
-  const [i, setI] = useState(0)
-  const [p, setP] = useState<Profile>(emptyProfile)
+  const saved = useState(loadProgress)[0]
+  const [i, setI] = useState(saved.i)
+  const [p, setP] = useState<Profile>(saved.p)
   const [spark, setSpark] = useState(0) // bumped when a new idea is generated, so the ticket can react
   const when = useState(() => nextSession(new Date()))[0]
   const step = STEPS[i]
@@ -23,6 +39,10 @@ export function Onboarding({ onPractice }: { onPractice: () => void }) {
   const next = () => { setI((n) => Math.min(n + 1, STEPS.length - 1)) }
   const back = () => setI((n) => Math.max(0, n - 1))
   const stage = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    try { localStorage.setItem(SAVE_KEY, JSON.stringify({ i, p })) } catch { /* private mode */ }
+  }, [i, p])
 
   useEffect(() => {
     stage.current?.querySelector<HTMLElement>('[data-autofocus]')?.focus({ preventScroll: true })
