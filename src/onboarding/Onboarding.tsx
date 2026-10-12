@@ -320,7 +320,7 @@ function Contact({ p, onLive, onNext, layout }: { p: Profile; onLive: (patch: Pa
         {layout === 'link' && (
           <>
             <div className="cf-tabs" role="radiogroup" aria-label="Network">{NETWORKS.map((n) => radio(n, <><NetIcon id={n.id} size={18} />{n.label}</>))}</div>
-            <label className="cf-link"><span>{net.domain}</span>{input('')}</label>
+            <label className="cf-link"><span>{net.domain}</span><span className="cf-fit" data-v={h.replace(/^@/, '') || 'username'}>{input('')}</span></label>
           </>
         )}
         {layout === 'tiles' && (

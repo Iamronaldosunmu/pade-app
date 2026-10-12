@@ -299,10 +299,12 @@
 .cf-tabs { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
 .cf-tabs button { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink-muted); font: 700 15px var(--text); }
 .cf-tabs button[aria-checked='true'] { background: var(--gold); border-color: var(--gold); color: var(--ground); }
-.cf-link { display: flex; align-items: center; min-height: 64px; padding: 0 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; transition: border-color 0.25s; cursor: text; }
+.cf-link { display: flex; align-items: center; justify-content: center; min-height: 64px; padding: 0 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; transition: border-color 0.25s; cursor: text; }
 .cf-link:focus-within, .cf-card:focus-within, .cf-in:focus-within { border-color: var(--gold); }
-.cf-link span { color: var(--ink-muted); font: 500 16px var(--time); white-space: nowrap; }
-.cf-link input { padding-left: 2px; }
+.cf-link > span:first-child { color: var(--ink-muted); font: 500 16px var(--time); white-space: nowrap; }
+.cf-fit { display: inline-grid; max-width: 60%; }
+.cf-fit::after { content: attr(data-v); grid-area: 1 / 1; visibility: hidden; white-space: pre; font: 600 22px var(--text); padding: 0 2px; }
+.cf-fit input { grid-area: 1 / 1; padding: 0 2px; }
 
 /* 2 tiles */
 .cf-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
