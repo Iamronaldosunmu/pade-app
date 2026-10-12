@@ -71,22 +71,23 @@ function Head({ title, hint }: { title: string; hint?: string }) {
   )
 }
 
-function Foot({ ok, label = 'Continue', why }: { ok: boolean; label?: string; why?: string }) {
+function Foot({ ok, label = 'Continue', why, onSkip }: { ok: boolean; label?: string; why?: string; onSkip?: () => void }) {
   return (
     <div className="ob-foot">
       {!ok && why && <p className="ob-why" id="why">{why}</p>}
       <button className="ob-next" type="submit" aria-disabled={!ok} aria-describedby={!ok && why ? 'why' : undefined}>{label}</button>
+      {onSkip && <button type="button" className="ob-link" onClick={() => { tick(); onSkip() }}>Skip for now</button>}
     </div>
   )
 }
 
 /** One question per screen. Enter submits. */
-function Q({ title, hint, ok, onNext, children }: { title: string; hint?: string; ok: boolean; onNext: () => void; children: React.ReactNode }) {
+function Q({ title, hint, ok, onNext, onSkip, children }: { title: string; hint?: string; ok: boolean; onNext: () => void; onSkip?: () => void; children: React.ReactNode }) {
   return (
     <form className="ob-q" onSubmit={(e) => { e.preventDefault(); if (ok) { chime(); onNext() } }}>
       <Head title={title} hint={hint} />
       {children}
-      <Foot ok={ok} />
+      <Foot ok={ok} onSkip={onSkip} />
     </form>
   )
 }
@@ -191,11 +192,12 @@ function Takes({ value, onLive, onNext }: { value: string[]; onLive: (v: string[
   const [b, setB] = useState(value[1] ?? '')
   const [two, setTwo] = useState(!!value[1])
   const [idea, setIdea] = useState(0)
-  const ok = a.trim().length >= 3
+  const empty = a.trim() === ''
+  const ok = empty || a.trim().length >= 3
   const live = (x: string, y: string) => onLive([x.trim(), y.trim()].filter(Boolean))
   const second = useRef<HTMLTextAreaElement>(null)
   return (
-    <Q title="What is your hot take?" hint="Say something people can argue with. It goes on your ticket." ok={ok} onNext={() => onNext([a.trim(), b.trim()].filter(Boolean))}>
+    <Q title="What is your hot take?" hint="Say something people can argue with. It goes on your ticket, or skip it for now." ok={ok} onNext={() => onNext([a.trim(), b.trim()].filter(Boolean))} onSkip={empty ? () => onNext([]) : undefined}>
       <div className="takes">
         <div className="take-card">
           <label className="take-tag" htmlFor="t1"><i>1</i>Your take</label>
@@ -213,7 +215,7 @@ function Takes({ value, onLive, onNext }: { value: string[]; onLive: (v: string[
             <div className="take-foot"><span /><span className="ob-count">{b.length}/90</span></div>
           </div>
         ) : (
-          ok && <button type="button" className="take-add" onClick={() => { tick(); setTwo(true); setTimeout(() => second.current?.focus(), 30) }}>+ Add a second take</button>
+          !empty && ok && <button type="button" className="take-add" onClick={() => { tick(); setTwo(true); setTimeout(() => second.current?.focus(), 30) }}>+ Add a second take</button>
         )}
       </div>
     </Q>
