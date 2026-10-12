@@ -85,7 +85,6 @@
 .tk-photo { width: 48px; height: 48px; border-radius: 8px; border: 1.5px dashed rgba(36, 29, 14, 0.4); display: grid; place-items: center; font: 500 10px var(--time); text-transform: uppercase; opacity: 0.6; }
 .tk-photo.has { border: 0; opacity: 1; overflow: hidden; box-shadow: 0 0 0 2px rgba(36, 29, 14, 0.85); animation: takeIn 0.5s var(--ease) both; }
 .tk-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.tk-free { font: 900 12px/1 var(--display); font-stretch: 68%; text-transform: uppercase; color: #b3261e; border: 2px solid #b3261e; border-radius: 6px; padding: 4px 6px; transform: rotate(-8deg); animation: stamp 0.5s 0.5s var(--ease) both; }
 .ticket.printed { animation: print 0.9s var(--ease) both; }
 @keyframes print { from { transform: translateY(-40px) rotateX(40deg); opacity: 0; } }
 .ticket.full .tk-name { font-size: 40px; }

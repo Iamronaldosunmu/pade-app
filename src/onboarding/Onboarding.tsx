@@ -153,7 +153,7 @@ function Welcome({ onSignedIn }: { onSignedIn: (id: Awaited<ReturnType<typeof si
     <div className={`ob-q ob-welcome${leaving ? ' leaving' : ''}`}>
       <p className="wm big" aria-label="Pàdé">P<i>à</i>d<i>é</i></p>
       <h1 className="ob-h" tabIndex={-1}>Meet someone new, five minutes at a time.</h1>
-      <p className="ob-hint">Fridays, 9 to 10pm, in Lagos. Your first Friday is free.</p>
+      <p className="ob-hint">Every Friday, 9 to 10pm, in Lagos. Always free.</p>
       <div className="ob-auth" role="group" aria-label="Sign up or sign in" aria-busy={busy !== null}>
         {PROVIDERS.map((pr, k) => (
           <button key={pr.id} className={`auth-btn${busy === pr.id ? ' busy' : ''}`} data-autofocus={k === 0 ? '' : undefined} aria-disabled={busy !== null && busy !== pr.id} onClick={() => go(pr.id)}>
@@ -516,7 +516,7 @@ function Final({ p, when, onPractice }: { p: Profile; when: Date; onPractice: ()
   if (!custom) {
     return (
       <div className="ob-q ob-final">
-        <Head title={`You are in, ${p.name}.`} hint="Your first Friday is completely free. This is your ticket. Make it yours, then tell someone you are coming." />
+        <Head title={`You are in, ${p.name}.`} hint="Every Friday is free. This is your ticket. Make it yours, then tell someone you are coming." />
         <div className="ob-foot">
           <button className="ob-next" data-autofocus onClick={() => setCustom(true)}>Customize and share</button>
           <button className="ob-link" onClick={addCal}>Add to calendar</button>
