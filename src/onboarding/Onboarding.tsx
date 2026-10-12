@@ -22,7 +22,7 @@ function loadProgress(): { i: number; p: Profile } {
     if (raw && typeof raw.i === 'number' && raw.i >= 0 && raw.i < STEPS.length && raw.p && typeof raw.p === 'object') {
       // a signed-in profile is needed for anything past the welcome screen
       if (raw.i > 0 && !raw.p.provider) return { i: 0, p: emptyProfile }
-      return { i: raw.i, p: { ...emptyProfile, ...raw.p, hasPhoto: false } } // the photo itself is not kept
+      return { i: raw.i, p: { ...emptyProfile, ...raw.p, hasPhoto: !!raw.p.photo } }
     }
   } catch { /* storage blocked or corrupt: start fresh */ }
   return { i: 0, p: emptyProfile }
@@ -74,7 +74,7 @@ export function Onboarding({ onPractice }: { onPractice: () => void }) {
         {step === 'work' && <Work value={p.work} onLive={(work) => set({ work })} onNext={(work) => { set({ work }); next() }} />}
         {step === 'takes' && <Takes onSpark={() => setSpark((n) => n + 1)} value={p.takes} onLive={(takes) => set({ takes })} onNext={(takes) => { set({ takes }); next() }} />}
         {step === 'contact' && <Contact p={p} onLive={(patch) => set(patch)} onNext={(patch) => { set(patch); next() }} />}
-        {step === 'photo' && <Photo has={p.hasPhoto} onNext={(hasPhoto) => { set({ hasPhoto }); next() }} />}
+        {step === 'photo' && <Photo photo={p.photo} onLive={(photo) => set({ photo, hasPhoto: !!photo })} onNext={() => next()} />}
         {step === 'buzzer' && <Buzzer onNext={next} />}
         {step === 'ticket' && <Final p={p} when={when} onPractice={onPractice} />}
         </div>
@@ -321,15 +321,33 @@ function Contact({ p, onLive, onNext }: { p: Profile; onLive: (patch: Partial<Pr
   )
 }
 
-function Photo({ has, onNext }: { has: boolean; onNext: (v: boolean) => void }) {
-  const [got, setGot] = useState(has)
-  const [url, setUrl] = useState('')
-  useEffect(() => () => { if (url) URL.revokeObjectURL(url) }, [url])
+/** Square, small JPEG so it fits comfortably in local storage and on the ticket. */
+function shrinkPhoto(file: File, size = 160): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file)
+    const img = new Image()
+    img.onload = () => {
+      const c = document.createElement('canvas')
+      c.width = c.height = size
+      const g = c.getContext('2d')
+      if (!g) { URL.revokeObjectURL(url); reject(new Error('no canvas')); return }
+      const side = Math.min(img.width, img.height)
+      g.drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, size, size)
+      URL.revokeObjectURL(url)
+      resolve(c.toDataURL('image/jpeg', 0.82))
+    }
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('bad image')) }
+    img.src = url
+  })
+}
+
+function Photo({ photo, onLive, onNext }: { photo: string; onLive: (photo: string) => void; onNext: () => void }) {
+  const got = photo !== ''
   return (
-    <form className="ob-q" onSubmit={(e) => { e.preventDefault(); onNext(got) }}>
+    <form className="ob-q" onSubmit={(e) => { e.preventDefault(); onNext() }}>
       <Head title="Add a photo." hint="Nobody sees it until a conversation passes five minutes. Then it opens for both of you." />
       <div className={`envelope${got ? ' sealed' : ''}`} aria-live="polite">
-        {url && <img src={url} alt="" />}
+        {photo && <img src={photo} alt="Your photo" />}
         <span className="flap" aria-hidden="true" />
         <span className="env-label">{got ? 'Sealed. Opens after 5:00' : 'Opens after 5:00'}</span>
       </div>
@@ -338,12 +356,12 @@ function Photo({ has, onNext }: { has: boolean; onNext: (v: boolean) => void }) 
         <input type="file" accept="image/*" capture="user" className="sr" data-autofocus onChange={(e) => {
           const f = e.target.files?.[0]
           if (!f) return
-          setUrl(URL.createObjectURL(f)); setGot(true); thud()
+          shrinkPhoto(f).then((d) => { onLive(d); thud() }).catch(() => { /* unreadable image: keep what we had */ })
         }} />
       </label>
       <div className="ob-foot">
-        <button className="ob-next" type="submit" aria-disabled={!got}>{got ? 'Continue' : 'Continue'}</button>
-        {!got && <button type="button" className="ob-link" onClick={() => onNext(false)}>Skip for now</button>}
+        <button className="ob-next" type="submit" aria-disabled={!got}>Continue</button>
+        {!got && <button type="button" className="ob-link" onClick={onNext}>Skip for now</button>}
       </div>
     </form>
   )

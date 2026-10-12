@@ -87,8 +87,8 @@ export function Ticket({ profile, when, full, printed, enter, spark = 0 }: { pro
       </div>
       <div className="tk-stub">
         {printed && <p className="tk-when">{sessionLabel(when)}</p>}
-        <span className={`tk-photo${profile.hasPhoto ? ' sealed' : ''}`} aria-hidden="true">
-          {profile.hasPhoto ? 'sealed' : 'photo'}
+        <span className={`tk-photo${profile.photo ? ' has' : ''}`} aria-hidden="true">
+          {profile.photo ? <img src={profile.photo} alt="" /> : 'photo'}
         </span>
       </div>
     </div>

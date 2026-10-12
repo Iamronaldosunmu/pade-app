@@ -18,6 +18,8 @@ export interface Profile {
   /** Handle on that network, without the @. Shared only when both people want to keep talking. */
   handle: string
   hasPhoto: boolean
+  /** small square JPEG data URL of the chosen photo, kept on this device only */
+  photo: string
 }
 
 export const emptyProfile: Profile = {
@@ -32,4 +34,5 @@ export const emptyProfile: Profile = {
   contactKind: 'instagram',
   handle: '',
   hasPhoto: false,
+  photo: '',
 }
