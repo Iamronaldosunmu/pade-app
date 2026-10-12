@@ -9,8 +9,8 @@ import { emptyProfile, type Profile } from './types'
 import { cleanHandle, cleanName, isAdult, parseAge, validHandleFor, validName } from './validate'
 import './onboarding.css'
 
-type StepId = 'welcome' | 'name' | 'age' | 'area' | 'work' | 'takes' | 'contact' | 'photo' | 'buzzer' | 'ticket'
-const STEPS: StepId[] = ['welcome', 'name', 'age', 'area', 'work', 'takes', 'contact', 'photo', 'buzzer', 'ticket']
+type StepId = 'welcome' | 'name' | 'age' | 'area' | 'work' | 'takes' | 'contact' | 'photo' | 'ticket'
+const STEPS: StepId[] = ['welcome', 'name', 'age', 'area', 'work', 'takes', 'contact', 'photo', 'ticket']
 const SHOW_TICKET: StepId[] = ['name', 'age', 'area', 'work', 'takes', 'contact', 'photo']
 
 const SAVE_KEY = 'pade.onboarding.v1'
@@ -19,10 +19,10 @@ const SAVE_KEY = 'pade.onboarding.v1'
 function loadProgress(): { i: number; p: Profile } {
   try {
     const raw = JSON.parse(localStorage.getItem(SAVE_KEY) ?? 'null') as { i?: number; p?: Partial<Profile> } | null
-    if (raw && typeof raw.i === 'number' && raw.i >= 0 && raw.i < STEPS.length && raw.p && typeof raw.p === 'object') {
+    if (raw && typeof raw.i === 'number' && raw.i >= 0 && raw.p && typeof raw.p === 'object') {
       // a signed-in profile is needed for anything past the welcome screen
       if (raw.i > 0 && !raw.p.provider) return { i: 0, p: emptyProfile }
-      return { i: raw.i, p: { ...emptyProfile, ...raw.p, hasPhoto: !!raw.p.photo } }
+      return { i: Math.min(raw.i, STEPS.length - 1), p: { ...emptyProfile, ...raw.p, hasPhoto: !!raw.p.photo } }
     }
   } catch { /* storage blocked or corrupt: start fresh */ }
   return { i: 0, p: emptyProfile }
@@ -76,7 +76,6 @@ export function Onboarding({ onPractice }: { onPractice: () => void }) {
         {step === 'takes' && <Takes onSpark={() => setSpark((n) => n + 1)} value={p.takes} onLive={(takes) => set({ takes })} onNext={(takes) => { set({ takes }); next() }} />}
         {step === 'contact' && <Contact p={p} onLive={(patch) => set(patch)} onNext={(patch) => { set(patch); next() }} />}
         {step === 'photo' && <Photo variant={pv} photo={p.photo} onLive={(photo) => set({ photo, hasPhoto: !!photo })} onNext={() => next()} />}
-        {step === 'buzzer' && <Buzzer onNext={next} />}
         {step === 'ticket' && <Final p={p} when={when} onPractice={onPractice} />}
         </div>
       </div>
@@ -435,39 +434,6 @@ function Photo({ variant, photo, onLive, onNext }: { variant: PhotoVariant; phot
         {!got && <button type="button" className="ob-link" onClick={onNext}>Skip for now</button>}
       </div>
     </form>
-  )
-}
-
-/** A twenty second dry run of the thing that matters most: the buzzer only works when it is red. */
-function Buzzer({ onNext }: { onNext: () => void }) {
-  const [t, setT] = useState(0)
-  const [state, setState] = useState<'wait' | 'early' | 'won'>('wait')
-  const [shake, setShake] = useState(0)
-  const red = t >= 3 && t < 9
-  useEffect(() => {
-    const id = setInterval(() => setT((x) => x + 0.1), 100)
-    return () => clearInterval(id)
-  }, [])
-  const press = () => {
-    if (state === 'won') return
-    if (red) { setState('won'); chime(); return }
-    thud(); setShake((s) => s + 1); setState('early')
-  }
-  const missed = t >= 9 && state !== 'won'
-  return (
-    <div className="ob-q">
-      <Head title="Learn the buzzer." hint="In a call, it works only while the screen flashes red. Try it now: wait for red, then press." />
-      <button className={`practice${red ? ' red' : ''}${state === 'won' ? ' won' : ''}`} key={shake} data-autofocus aria-disabled={!red && state !== 'won'} onClick={press}>
-        {state === 'won' ? 'Nice' : 'BUZZ'}
-      </button>
-      <p className="ob-hint pad" role="status">
-        {state === 'won' ? 'That is it. Press at the wrong time and nothing happens.' : missed ? 'Red window passed. Press anyway to see what happens.' : state === 'early' ? 'Too early. Wait for red.' : red ? 'Now!' : 'Wait for it…'}
-      </p>
-      <div className="ob-foot">
-        <button className="ob-next" aria-disabled={state !== 'won'} onClick={() => state === 'won' && onNext()}>Continue</button>
-        {state !== 'won' && <button className="ob-link" onClick={onNext}>Skip</button>}
-      </div>
-    </div>
   )
 }
 

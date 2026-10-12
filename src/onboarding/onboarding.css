@@ -58,11 +58,7 @@
 .chips-pick button:active { transform: scale(0.95); }
 .chips-pick button[aria-pressed='true'] { opacity: 0.25; }
 .chips-pick button:disabled { opacity: 0.35; }
-.practice { width: min(260px, 70vw); aspect-ratio: 1; border-radius: 50%; border: 6px solid var(--line); background: var(--surface); color: var(--ink-muted); font: 900 44px var(--display); font-stretch: 68%; letter-spacing: 0.04em; align-self: center; transition: background-color 0.15s, border-color 0.15s, color 0.15s; animation: shake 0.3s; }
-.practice.red { background: var(--buzz); border-color: #ff7a70; color: #fff; animation: pulse 0.9s ease-in-out infinite; }
-.practice.won { background: var(--gold); border-color: var(--gold); color: var(--ground); animation: none; }
 @keyframes pulse { 50% { transform: scale(1.04); } }
-@keyframes shake { 20% { transform: translateX(-8px); } 50% { transform: translateX(8px); } 80% { transform: translateX(-4px); } }
 .envelope { position: relative; align-self: center; width: min(280px, 80%); aspect-ratio: 4 / 3; border-radius: 16px; background: #e9dfc8; display: grid; place-items: end center; overflow: hidden; color: #3a3220; }
 .envelope img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: blur(14px) brightness(0.8); transform: scale(1.15); }
 .envelope .flap { position: absolute; inset: 0 0 auto 0; height: 55%; background: #d9cdb0; clip-path: polygon(0 0, 100% 0, 50% 100%); transform-origin: top; transition: transform 0.7s var(--ease); transform: rotateX(180deg); }
@@ -121,7 +117,6 @@
   .chips-pick button { min-height: 48px; font-size: 17px; padding: 0 20px; }
   .slot { min-height: 60px; font-size: 18px; }
   .ob-input.take { font-size: 24px; }
-  .practice { width: 300px; }
   .envelope { width: 340px; }
   .ob-ticket { display: none; }
   .ob-final .ticket { display: none; }
