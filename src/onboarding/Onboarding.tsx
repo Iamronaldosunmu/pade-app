@@ -391,21 +391,26 @@ function Final({ p, when, onPractice }: { p: Profile; when: Date; onPractice: ()
   const [big, setBig] = useState('') // data URL of the card while it is open full screen
   const dlg = useRef<HTMLDialogElement>(null)
   const bigImg = useRef<HTMLImageElement>(null)
+  const bigBg = useRef<HTMLDivElement>(null)
+  const bigX = useRef<HTMLButtonElement>(null)
   const from = useRef<DOMRect | null>(null)
   const closing = useRef(false)
   const FLY = { duration: 440, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)', fill: 'both' as const }
   /** The card as a shared element: it grows out of its place on the page and shrinks back into it. */
   const fly = (to: 'open' | 'close') => {
-    const d = dlg.current, img = bigImg.current, thumb = card.current
-    if (!d || !img) return
+    const img = bigImg.current, thumb = card.current
+    if (!dlg.current || !img) return
     const first = to === 'open' ? from.current : thumb?.getBoundingClientRect()
     const last = img.getBoundingClientRect()
     if (!first || reducedMotion()) { if (to === 'close') setBig(''); return }
     const hop = `translate(${first.left - last.left}px, ${first.top - last.top}px) scale(${first.width / last.width})`
     const a = to === 'open' ? [{ transform: hop }, { transform: 'none' }] : [{ transform: 'none' }, { transform: hop }]
-    img.animate(a, FLY)
-    const fade = d.animate({ opacity: to === 'open' ? [0, 1] : [1, 0] }, { ...FLY, duration: to === 'open' ? 300 : 360 })
-    if (to === 'close') fade.onfinish = () => { closing.current = false; setBig('') }
+    const move = img.animate(a, FLY)
+    // only the backdrop and the close button fade; the card itself stays solid until it is back in place
+    const fade = { opacity: to === 'open' ? [0, 1] : [1, 0] }
+    bigBg.current?.animate(fade, { ...FLY, duration: 360 })
+    bigX.current?.animate(fade, { ...FLY, duration: 200 })
+    if (to === 'close') move.onfinish = () => { closing.current = false; setBig('') }
   }
   const closeBig = () => { if (closing.current) return; closing.current = true; if (reducedMotion()) { closing.current = false; setBig(''); return } fly('close') }
   useEffect(() => {
@@ -462,8 +467,9 @@ function Final({ p, when, onPractice }: { p: Profile; when: Date; onPractice: ()
       </div>
       {big && (
         <dialog className="lb" ref={dlg} aria-label="Your ticket, full screen" onCancel={(e) => { e.preventDefault(); closeBig() }} onClose={() => setBig('')} onClick={closeBig}>
+          <div className="lb-bg" ref={bigBg} aria-hidden="true" />
           <img ref={bigImg} src={big} alt="Your Pàdé ticket, full size" />
-          <button type="button" className="lb-x" aria-label="Close" autoFocus onClick={closeBig}>×</button>
+          <button type="button" className="lb-x" ref={bigX} aria-label="Close" autoFocus onClick={closeBig}>×</button>
         </dialog>
       )}
     </div>
