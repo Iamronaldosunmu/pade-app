@@ -4,40 +4,26 @@ import { firstName, PROVIDERS, signIn, type Provider } from './auth'
 import { chime, reducedMotion, thud, tick } from './feel'
 import { Ticket } from './Ticket'
 import { canvasBlob, drawShareCard, INVITE_LINK, DEFAULT_SHARE, type ShareOpts } from './shareCard'
-import { googleCalendarUrl, nextSession } from './session-time'
-import { emptyProfile, type Profile } from './types'
+import { nextSession } from './session-time'
+import { loadProgress, SAVE_KEY, STEPS, type StepId } from './progress'
+import type { Profile } from './types'
 import { cleanHandle, cleanName, isAdult, parseAge, validHandleFor, validName } from './validate'
 import './onboarding.css'
 
-type StepId = 'welcome' | 'name' | 'age' | 'area' | 'work' | 'takes' | 'contact' | 'photo' | 'ticket'
-const STEPS: StepId[] = ['welcome', 'name', 'age', 'area', 'work', 'takes', 'contact', 'photo', 'ticket']
 const SHOW_TICKET: StepId[] = ['name', 'age', 'area', 'work', 'takes', 'contact', 'photo']
 
-const SAVE_KEY = 'pade.onboarding.v1'
-
-/** Where the person got to, so a refresh or a return visit picks up on the same screen with their answers. */
-function loadProgress(): { i: number; p: Profile } {
-  try {
-    const raw = JSON.parse(localStorage.getItem(SAVE_KEY) ?? 'null') as { i?: number; p?: Partial<Profile> } | null
-    if (raw && typeof raw.i === 'number' && raw.i >= 0 && raw.p && typeof raw.p === 'object') {
-      // a signed-in profile is needed for anything past the welcome screen
-      if (raw.i > 0 && !raw.p.provider) return { i: 0, p: emptyProfile }
-      return { i: Math.min(raw.i, STEPS.length - 1), p: { ...emptyProfile, ...raw.p, hasPhoto: !!raw.p.photo } }
-    }
-  } catch { /* storage blocked or corrupt: start fresh */ }
-  return { i: 0, p: emptyProfile }
-}
-
-export function Onboarding() {
+/** `edit` shows just one step (from the home screen) and returns there when it is done. */
+export function Onboarding({ edit = null, onExit, onHome }: { edit?: StepId | null; onExit?: () => void; onHome?: () => void }) {
   const saved = useState(loadProgress)[0]
   const [i, setI] = useState(saved.i)
   const [p, setP] = useState<Profile>(saved.p)
   const [spark, setSpark] = useState(0) // bumped when a new idea is generated, so the ticket can react
   const when = useState(() => nextSession(new Date()))[0]
-  const step = STEPS[i]
+  const step: StepId = edit ?? STEPS[i]
+  const advance = () => { if (edit) onExit?.(); else next() }
   const set = (patch: Partial<Profile>) => setP((x) => ({ ...x, ...patch }))
   const next = () => { setI((n) => Math.min(n + 1, STEPS.length - 1)) }
-  const back = () => setI((n) => Math.max(0, n - 1))
+  const back = () => { if (edit) onExit?.(); else setI((n) => Math.max(0, n - 1)) }
   const stage = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -50,9 +36,9 @@ export function Onboarding() {
 
   return (
     <div className={`ob${step === 'welcome' ? ' solo' : ''}`}>
-      <div className="ob-bar" role="progressbar" aria-label="Progress" aria-valuemin={0} aria-valuemax={STEPS.length - 1} aria-valuenow={i}>
+      {!edit && <div className="ob-bar" role="progressbar" aria-label="Progress" aria-valuemin={0} aria-valuemax={STEPS.length - 1} aria-valuenow={i}>
         <span style={{ transform: `scaleX(${i / (STEPS.length - 1)})` }} />
-      </div>
+      </div>}
       {step !== 'welcome' && (
         <aside className="ob-aside" aria-hidden="true">
           <Ticket profile={p} when={when} full enter printed={step === 'ticket'} spark={spark} />
@@ -61,21 +47,21 @@ export function Onboarding() {
       )}
       <div className="ob-main">
 <div className="ob-top">
-          {i > 0 && <button className="ob-back" onClick={back} aria-label="Back"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6" /></svg></button>}
+          {(i > 0 || edit) && <button className="ob-back" onClick={back} aria-label="Back"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6" /></svg></button>}
         </div>
         {SHOW_TICKET.includes(step) && (
           <div className="ob-ticket"><Ticket profile={p} when={when} enter={step === 'name'} /></div>
         )}
         <div className="ob-stage" ref={stage} key={step}>
           {step === 'welcome' && <Welcome onSignedIn={(id) => { set({ provider: id.provider, name: firstName(id.name), contactKind: id.provider === 'x' ? 'x' : 'instagram', handle: id.provider === 'google' ? '' : id.handle }); next() }} />}
-        {step === 'name' && <Name provider={p.provider} value={p.name} onLive={(v) => set({ name: v })} onNext={(v) => { set({ name: v }); next() }} />}
-        {step === 'age' && <Age value={p.age} onLive={(age) => set({ age })} onNext={(v) => { set({ age: v }); next() }} />}
-        {step === 'area' && <Area value={p.area} onLive={(area) => set({ area })} onNext={(v) => { set({ area: v }); next() }} />}
-        {step === 'work' && <Work value={p.work} onLive={(work) => set({ work })} onNext={(work) => { set({ work }); next() }} />}
-        {step === 'takes' && <Takes onSpark={() => setSpark((n) => n + 1)} value={p.takes} onLive={(takes) => set({ takes })} onNext={(takes) => { set({ takes }); next() }} />}
-        {step === 'contact' && <Contact p={p} onLive={(patch) => set(patch)} onNext={(patch) => { set(patch); next() }} />}
-        {step === 'photo' && <Photo photo={p.photo} onLive={(photo) => set({ photo, hasPhoto: !!photo })} onNext={() => next()} />}
-        {step === 'ticket' && <Final p={p} when={when} />}
+        {step === 'name' && <Name provider={p.provider} value={p.name} onLive={(v) => set({ name: v })} onNext={(v) => { set({ name: v }); advance() }} />}
+        {step === 'age' && <Age value={p.age} onLive={(age) => set({ age })} onNext={(v) => { set({ age: v }); advance() }} />}
+        {step === 'area' && <Area value={p.area} onLive={(area) => set({ area })} onNext={(v) => { set({ area: v }); advance() }} />}
+        {step === 'work' && <Work value={p.work} onLive={(work) => set({ work })} onNext={(work) => { set({ work }); advance() }} />}
+        {step === 'takes' && <Takes onSpark={() => setSpark((n) => n + 1)} value={p.takes} onLive={(takes) => set({ takes })} onNext={(takes) => { set({ takes }); advance() }} />}
+        {step === 'contact' && <Contact p={p} onLive={(patch) => set(patch)} onNext={(patch) => { set(patch); advance() }} />}
+        {step === 'photo' && <Photo photo={p.photo} onLive={(photo) => set({ photo, hasPhoto: !!photo })} onNext={() => advance()} />}
+        {step === 'ticket' && <Final p={p} onHome={edit ? advance : () => onHome?.()} home={edit ? 'Back to my home' : 'Go to my home'} />}
         </div>
       </div>
     </div>
@@ -383,7 +369,7 @@ const LOOKS: { id: ShareOpts['style']; label: string; bg: string }[] = [
 ]
 
 /** One screen: your ticket as a shareable card, a colour if you care, and the share button. */
-function Final({ p, when }: { p: Profile; when: Date }) {
+function Final({ p, onHome, home }: { p: Profile; onHome: () => void; home: string }) {
   useEffect(() => { thud() }, [])
   const card = useRef<HTMLCanvasElement>(null)
   const [note, setNote] = useState('')
@@ -454,7 +440,7 @@ function Final({ p, when }: { p: Profile; when: Date }) {
       <div className="ob-foot">
         <button className="ob-next" data-autofocus onClick={share}>Share my ticket</button>
         {note && <p className="ob-why" role="status">{note}</p>}
-        <a className="ob-link" href={googleCalendarUrl(when)} target="_blank" rel="noopener noreferrer">Add to Google Calendar</a>
+        <button className="ob-next ghost" onClick={onHome}>{home}</button>
       </div>
       {big && (
         <dialog className="lb" ref={dlg} aria-label="Your ticket, full screen" onCancel={(e) => { e.preventDefault(); closeBig() }} onClose={() => setBig('')} onClick={closeBig}>

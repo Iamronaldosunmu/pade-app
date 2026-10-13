@@ -10,6 +10,12 @@ export function nextSession(now: Date): Date {
   return d
 }
 
+/** The session to show right now: the one in progress (live) or the next one. Sessions run for an hour. */
+export function currentSession(now: Date): { start: Date; live: boolean } {
+  const start = nextSession(new Date(now.getTime() - 3600_000))
+  return { start, live: start.getTime() <= now.getTime() }
+}
+
 export function sessionLabel(start: Date): string {
   const lagos = new Date(start.getTime() + 3600_000)
   const day = lagos.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' })

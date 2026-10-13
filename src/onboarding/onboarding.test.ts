@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { cleanHandle, isAdult, normalizePhone, parseAge, validHandle, validHandleFor, validName } from './validate'
-import { googleCalendarUrl, nextSession, sessionLabel } from './session-time'
+import { currentSession, googleCalendarUrl, nextSession, sessionLabel } from './session-time'
 import { toPerson } from './toPerson'
 import { compatibility } from '../engine/pairing'
 import { emptyProfile } from './types'
@@ -54,6 +54,14 @@ describe('next session', () => {
     expect(url.origin + url.pathname).toBe('https://calendar.google.com/calendar/render')
     expect(url.searchParams.get('dates')).toBe('20261009T200000Z/20261009T210000Z')
     expect(url.searchParams.get('recur')).toBe('RRULE:FREQ=WEEKLY;BYDAY=FR')
+  })
+})
+
+describe('the session on show', () => {
+  it('is live for the hour after it starts, then moves to next week', () => {
+    expect(currentSession(new Date('2026-10-09T19:59:00Z'))).toEqual({ start: new Date('2026-10-09T20:00:00Z'), live: false })
+    expect(currentSession(new Date('2026-10-09T20:30:00Z'))).toEqual({ start: new Date('2026-10-09T20:00:00Z'), live: true })
+    expect(currentSession(new Date('2026-10-09T21:01:00Z'))).toEqual({ start: new Date('2026-10-16T20:00:00Z'), live: false })
   })
 })
 
