@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { AREAS, TAKE_IDEAS } from './data'
-import { firstName, PROVIDERS, signIn, type Provider } from './auth'
+import { sendEmailLink, signInWithGoogle, validEmail, type Provider } from './auth'
 import { chime, reducedMotion, thud, tick } from './feel'
 import { Ticket } from './Ticket'
 import { canvasBlob, drawShareCard, INVITE_LINK, DEFAULT_SHARE, type ShareOpts } from './shareCard'
 import { nextSession } from './session-time'
 import { loadProgress, SAVE_KEY, STEPS, type StepId } from './progress'
+import { saveProfile, savable } from '../db/profiles'
+import { currentUserId } from '../lib/session'
+import { remoteEnabled } from '../lib/supabase'
 import type { Profile } from './types'
 import { cleanHandle, cleanName, isAdult, parseAge, validHandleFor, validName } from './validate'
 import './onboarding.css'
@@ -30,6 +33,13 @@ export function Onboarding({ edit = null, onExit, onHome }: { edit?: StepId | nu
     try { localStorage.setItem(SAVE_KEY, JSON.stringify({ i, p })) } catch { /* private mode */ }
   }, [i, p])
 
+  // With a real account, keep the saved copy up to date a moment after each change.
+  useEffect(() => {
+    if (!remoteEnabled || !savable(p)) return
+    const t = setTimeout(() => { void currentUserId().then(async (id) => { if (id) await saveProfile(id, p) }).catch(() => {}) }, 700)
+    return () => clearTimeout(t)
+  }, [p])
+
   useEffect(() => {
     stage.current?.querySelector<HTMLElement>('[data-autofocus]')?.focus({ preventScroll: true })
   }, [step])
@@ -53,7 +63,7 @@ export function Onboarding({ edit = null, onExit, onHome }: { edit?: StepId | nu
           <div className="ob-ticket"><Ticket profile={p} when={when} enter={step === 'name'} /></div>
         )}
         <div className="ob-stage" ref={stage} key={step}>
-          {step === 'welcome' && <Welcome onSignedIn={(id) => { set({ provider: id.provider, name: firstName(id.name), contactKind: id.provider === 'x' ? 'x' : 'instagram', handle: id.provider === 'google' ? '' : id.handle }); next() }} />}
+          {step === 'welcome' && <Welcome onSignedIn={(provider) => { set({ provider }); next() }} />}
         {step === 'name' && <Name provider={p.provider} value={p.name} onLive={(v) => set({ name: v })} onNext={(v) => { set({ name: v }); advance() }} />}
         {step === 'age' && <Age value={p.age} onLive={(age) => set({ age })} onNext={(v) => { set({ age: v }); advance() }} />}
         {step === 'area' && <Area value={p.area} onLive={(area) => set({ area })} onNext={(v) => { set({ area: v }); advance() }} />}
@@ -98,34 +108,36 @@ function Q({ title, hint, ok, onNext, onSkip, children }: { title: string; hint?
   )
 }
 
-const GLYPH: Record<Provider, React.ReactNode> = {
-  google: <span className="gl-g" aria-hidden="true">G</span>,
-  instagram: (
-    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-      <rect x="3" y="3" width="18" height="18" rx="5.5" /><circle cx="12" cy="12" r="4.2" /><circle cx="17.3" cy="6.7" r="1" fill="currentColor" stroke="none" />
-    </svg>
-  ),
-  x: (
-    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
-      <path d="M17.8 3h3.1l-6.8 7.7L22 21h-6.2l-4.9-6.3L5.3 21H2.2l7.3-8.3L2 3h6.4l4.4 5.8L17.8 3zm-1.1 16.2h1.7L7.4 4.7H5.6l11.1 14.5z" />
-    </svg>
-  ),
-}
+const GLYPH = { google: <span className="gl-g" aria-hidden="true">G</span> }
 
-function Welcome({ onSignedIn }: { onSignedIn: (id: Awaited<ReturnType<typeof signIn>>) => void }) {
+function Welcome({ onSignedIn }: { onSignedIn: (provider: Provider) => void }) {
   const [busy, setBusy] = useState<Provider | null>(null)
   const [leaving, setLeaving] = useState(false)
-  const go = async (id: Provider) => {
-    if (busy) return
-    tick()
-    setBusy(id)
-    const who = await signIn(id)
+  const [email, setEmail] = useState('')
+  const [sent, setSent] = useState(false)
+  const [err, setErr] = useState('')
+  const finish = async (provider: Provider) => {
     chime()
     if (!reducedMotion()) {
       setLeaving(true)
       await new Promise((r) => setTimeout(r, 320))
     }
-    onSignedIn(who)
+    onSignedIn(provider)
+  }
+  const google = async () => {
+    if (busy) return
+    tick(); setErr(''); setBusy('google')
+    try { if ((await signInWithGoogle()) === 'local') await finish('google') }
+    catch { setBusy(null); setErr('Could not reach Google. Try again.') }
+  }
+  const mail = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (busy || !validEmail(email)) return
+    tick(); setErr(''); setBusy('email')
+    try {
+      if ((await sendEmailLink(email.trim())) === 'local') await finish('email')
+      else { setSent(true); setBusy(null) }
+    } catch { setBusy(null); setErr('Could not send the link. Check the address and try again.') }
   }
   return (
     <div className={`ob-q ob-welcome${leaving ? ' leaving' : ''}`}>
@@ -133,13 +145,23 @@ function Welcome({ onSignedIn }: { onSignedIn: (id: Awaited<ReturnType<typeof si
       <h1 className="ob-h" tabIndex={-1}>Meet someone new, five minutes at a time.</h1>
       <p className="ob-hint">Every Friday, 9 to 10pm, in Lagos.</p>
       <div className="ob-auth" role="group" aria-label="Sign up or sign in" aria-busy={busy !== null}>
-        {PROVIDERS.map((pr, k) => (
-          <button key={pr.id} className={`auth-btn${busy === pr.id ? ' busy' : ''}`} data-autofocus={k === 0 ? '' : undefined} aria-disabled={busy !== null && busy !== pr.id} onClick={() => go(pr.id)}>
-            <span className="auth-glyph">{GLYPH[pr.id]}</span>
-            <span className="auth-label">{busy === pr.id ? 'Connecting…' : `Continue with ${pr.label}`}</span>
-            {busy === pr.id && <span className="auth-spin" aria-hidden="true" />}
-          </button>
-        ))}
+        <button className={`auth-btn${busy === 'google' ? ' busy' : ''}`} data-autofocus="" aria-disabled={busy !== null && busy !== 'google'} onClick={google}>
+          <span className="auth-glyph">{GLYPH.google}</span>
+          <span className="auth-label">{busy === 'google' ? 'Connecting…' : 'Continue with Google'}</span>
+          {busy === 'google' && <span className="auth-spin" aria-hidden="true" />}
+        </button>
+        {sent ? (
+          <p className="auth-note" role="status">Check {email.trim()} for your sign-in link. You can close this tab.</p>
+        ) : (
+          <form className="auth-mail" onSubmit={mail} noValidate>
+            <label htmlFor="auth-email" className="auth-or">Or get a link by email</label>
+            <div className="auth-row">
+              <input id="auth-email" type="email" inputMode="email" autoComplete="email" placeholder="you@email.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+              <button className="auth-send" type="submit" aria-disabled={!validEmail(email) || busy !== null}>{busy === 'email' ? 'Sending…' : 'Send link'}</button>
+            </div>
+          </form>
+        )}
+        {err && <p className="auth-err" role="alert">{err}</p>}
       </div>
     </div>
   )
@@ -149,7 +171,7 @@ function Name({ provider, value, onLive, onNext }: { provider: Provider | null; 
   const [v, setV] = useState(value)
   const [prefilled] = useState(!!value)
   return (
-    <Q title="What should we call you?" hint={provider && prefilled ? `You are in. We took this from ${PROVIDERS.find((x) => x.id === provider)?.label}. Change it if you like. It is what people see.` : 'First name or a nickname. This is what people see.'} ok={validName(v)} onNext={() => onNext(cleanName(v))}>
+    <Q title="What should we call you?" hint={provider && prefilled ? `You are in. Change it if you like. It is what people see.` : 'First name or a nickname. This is what people see.'} ok={validName(v)} onNext={() => onNext(cleanName(v))}>
       <label className="sr" htmlFor="nm">Name</label>
       <input id="nm" className="ob-input big" data-autofocus autoComplete="given-name" maxLength={24} value={v} onChange={(e) => { setV(e.target.value); onLive(e.target.value.trimStart()) }} />
     </Q>

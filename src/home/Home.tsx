@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { fetchGoing, saveGoing } from '../db/profiles'
 import { Ticket } from '../onboarding/Ticket'
 import type { StepId } from '../onboarding/progress'
 import { currentSession, googleCalendarUrl, sessionLabel } from '../onboarding/session-time'
@@ -24,7 +25,7 @@ function loadGoing(key: string): boolean {
   try { return localStorage.getItem(key) !== 'no' } catch { return true }
 }
 
-export function Home({ profile, onEdit, onSignOut }: { profile: Profile; onEdit: (s: StepId) => void; onSignOut: () => void }) {
+export function Home({ profile, userId = null, onEdit, onSignOut }: { profile: Profile; userId?: string | null; onEdit: (s: StepId) => void; onSignOut: () => void }) {
   const [sess] = useState(() => currentSession(new Date()))
   const clock = useCountdown(sess.start)
   // the session may start while the page is open
@@ -32,11 +33,16 @@ export function Home({ profile, onEdit, onSignOut }: { profile: Profile; onEdit:
   const goKey = `pade.going.${sess.start.toISOString()}`
   const [going, setGoing] = useState(() => loadGoing(goKey))
   const flip = () => {
-    setGoing((g) => {
-      try { localStorage.setItem(goKey, g ? 'no' : 'yes') } catch { /* private mode */ }
-      return !g
-    })
+    const next = !going
+    setGoing(next)
+    try { localStorage.setItem(goKey, next ? 'yes' : 'no') } catch { /* private mode */ }
+    if (userId) void saveGoing(userId, sess.start, next).catch(() => {})
   }
+  // another device may have changed it
+  useEffect(() => {
+    if (!userId) return
+    void fetchGoing(userId, sess.start).then((g) => { if (g !== null) setGoing(g) }).catch(() => {})
+  }, [userId, sess.start])
 
   const rows: { step: StepId; label: string; value: string }[] = [
     { step: 'name', label: 'Name', value: profile.name },

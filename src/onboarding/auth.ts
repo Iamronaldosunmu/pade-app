@@ -1,30 +1,32 @@
-export type Provider = 'google' | 'instagram' | 'x'
+import { supabase } from '../lib/supabase'
 
-export interface Identity {
-  provider: Provider
-  /** Display name the provider gave us, used to prefill the name step. */
-  name: string
-  /** Handle on that network, when the provider has one. */
-  handle: string
-}
+export type Provider = 'google' | 'email'
 
 export const PROVIDERS: { id: Provider; label: string }[] = [
   { id: 'google', label: 'Google' },
-  { id: 'instagram', label: 'Instagram' },
-  { id: 'x', label: 'X' },
+  { id: 'email', label: 'email' },
 ]
 
-/**
- * Prototype stand-in for OAuth. It waits a moment, then returns an identity with no name or handle (nothing is invented).
- * The real version redirects to the provider and reads the profile back (Supabase Auth).
- */
-export function signIn(provider: Provider): Promise<Identity> {
-  const sample: Record<Provider, Identity> = {
-    google: { provider, name: '', handle: '' },
-    instagram: { provider, name: '', handle: '' },
-    x: { provider, name: '', handle: '' },
-  }
-  return new Promise((resolve) => setTimeout(() => resolve(sample[provider]), 1400))
+const here = () => window.location.origin + window.location.pathname
+
+/** Sends the browser to Google. Resolves only in local mode; with a real backend the page navigates away and comes back signed in. */
+export async function signInWithGoogle(): Promise<'local' | 'redirecting'> {
+  if (!supabase) { await new Promise((r) => setTimeout(r, 900)); return 'local' }
+  const { error } = await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: here() } })
+  if (error) throw error
+  return 'redirecting'
 }
+
+/** Emails a one-tap sign-in link. In local mode it just pretends, so the preview flows. */
+export async function sendEmailLink(email: string): Promise<'local' | 'sent'> {
+  if (!supabase) { await new Promise((r) => setTimeout(r, 900)); return 'local' }
+  const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: here() } })
+  if (error) throw error
+  return 'sent'
+}
+
+export const validEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim())
+
+export async function signOutRemote() { await supabase?.auth.signOut() }
 
 export const firstName = (full: string) => full.trim().split(/\s+/)[0] ?? ''
