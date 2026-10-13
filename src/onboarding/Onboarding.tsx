@@ -61,7 +61,7 @@ export function Onboarding({ edit = null, onExit, onHome }: { edit?: StepId | nu
         {step === 'takes' && <Takes onSpark={() => setSpark((n) => n + 1)} value={p.takes} onLive={(takes) => set({ takes })} onNext={(takes) => { set({ takes }); advance() }} />}
         {step === 'contact' && <Contact p={p} onLive={(patch) => set(patch)} onNext={(patch) => { set(patch); advance() }} />}
         {step === 'photo' && <Photo photo={p.photo} onLive={(photo) => set({ photo, hasPhoto: !!photo })} onNext={() => advance()} />}
-        {step === 'ticket' && <Final p={p} onHome={edit ? advance : () => onHome?.()} home={edit ? 'Back to my home' : 'Go to my home'} />}
+        {step === 'ticket' && <Final p={p} onHome={edit ? advance : () => onHome?.()} home={edit ? 'Back to my home' : 'Finish sign up'} />}
         </div>
       </div>
     </div>
