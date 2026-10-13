@@ -4,7 +4,7 @@ import { firstName, PROVIDERS, signIn, type Provider } from './auth'
 import { chime, reducedMotion, thud, tick } from './feel'
 import { Ticket } from './Ticket'
 import { canvasBlob, drawShareCard, INVITE_LINK, DEFAULT_SHARE, type ShareOpts } from './shareCard'
-import { nextSession, sessionIcs } from './session-time'
+import { googleCalendarUrl, nextSession } from './session-time'
 import { emptyProfile, type Profile } from './types'
 import { cleanHandle, cleanName, isAdult, parseAge, validHandleFor, validName } from './validate'
 import './onboarding.css'
@@ -422,14 +422,6 @@ function Final({ p, when, onPractice }: { p: Profile; when: Date; onPractice: ()
   }, [big])
   const opts: ShareOpts = { ...DEFAULT_SHARE, style }
   useEffect(() => { if (card.current) void drawShareCard(p, card.current, { ...DEFAULT_SHARE, style }) }, [p, style])
-  const addCal = () => {
-    const blob = new Blob([sessionIcs(when)], { type: 'text/calendar' })
-    const a = document.createElement('a')
-    a.href = URL.createObjectURL(blob)
-    a.download = 'pade-friday.ics'
-    a.click()
-    setTimeout(() => URL.revokeObjectURL(a.href), 1000)
-  }
   const share = async () => {
     if (!card.current) return
     try {
@@ -462,7 +454,7 @@ function Final({ p, when, onPractice }: { p: Profile; when: Date; onPractice: ()
       <div className="ob-foot">
         <button className="ob-next" data-autofocus onClick={share}>Share my ticket</button>
         {note && <p className="ob-why" role="status">{note}</p>}
-        <button className="ob-link" onClick={addCal}>Add to calendar</button>
+        <a className="ob-link" href={googleCalendarUrl(when)} target="_blank" rel="noopener noreferrer">Add to Google Calendar</a>
         <button className="ob-link" onClick={onPractice}>Try a practice call</button>
       </div>
       {big && (

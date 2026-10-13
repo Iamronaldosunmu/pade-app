@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { cleanHandle, isAdult, normalizePhone, parseAge, validHandle, validHandleFor, validName } from './validate'
-import { nextSession, sessionIcs, sessionLabel } from './session-time'
+import { googleCalendarUrl, nextSession, sessionLabel } from './session-time'
 import { toPerson } from './toPerson'
 import { compatibility } from '../engine/pairing'
 import { emptyProfile } from './types'
@@ -47,12 +47,13 @@ describe('next session', () => {
   it('finds the coming Friday from midweek', () => {
     expect(nextSession(new Date('2026-10-07T09:00:00Z')).toISOString()).toBe('2026-10-09T20:00:00.000Z')
   })
-  it('labels it in Lagos time and writes a calendar file', () => {
+  it('labels it in Lagos time and builds a Google Calendar link', () => {
     const s = nextSession(new Date('2026-10-07T09:00:00Z'))
     expect(sessionLabel(s)).toBe('Friday 9 October, 9pm')
-    const ics = sessionIcs(s)
-    expect(ics).toContain('DTSTART:20261009T200000Z')
-    expect(ics).toContain('DTEND:20261009T210000Z')
+    const url = new URL(googleCalendarUrl(s))
+    expect(url.origin + url.pathname).toBe('https://calendar.google.com/calendar/render')
+    expect(url.searchParams.get('dates')).toBe('20261009T200000Z/20261009T210000Z')
+    expect(url.searchParams.get('recur')).toBe('RRULE:FREQ=WEEKLY;BYDAY=FR')
   })
 })
 

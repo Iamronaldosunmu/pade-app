@@ -20,6 +20,7 @@
 .ob-next.ghost { background: var(--surface); color: var(--ink); border: 1px solid var(--line); cursor: pointer; }
 .ob-next.ghost:focus-within { outline: 3px solid var(--gold); outline-offset: 3px; }
 .ob-link { min-height: 44px; border: 0; background: none; color: var(--gold); font: 700 15px var(--text); align-self: flex-start; }
+a.ob-link { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
 .ob-link:disabled { color: var(--ink-muted); }
 .ob-why, .ob-err { color: var(--ink-muted); font-size: 15px; }
 .ob-err { color: #ff8a80; }
@@ -327,6 +328,7 @@
 .sh .share-card { width: auto; height: min(44vh, 430px); aspect-ratio: 9 / 16; align-self: center; }
 .sh .ob-foot { width: 100%; align-items: center; }
 .sh .ob-foot .ob-next { align-self: stretch; }
+.sh .ob-foot .ob-link { align-self: center; padding: 0 12px; }
 .sh-dots { display: flex; gap: 14px; justify-content: center; }
 .sh-dots button { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--line); transition: transform 0.25s var(--ease), border-color 0.25s var(--ease); }
 .sh-dots button[aria-checked='true'] { border-color: var(--gold); transform: scale(1.12); box-shadow: 0 0 0 3px var(--ground), 0 0 0 5px var(--gold); }

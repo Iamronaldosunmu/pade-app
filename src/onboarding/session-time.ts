@@ -18,26 +18,16 @@ export function sessionLabel(start: Date): string {
 
 const stamp = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')
 
-/** A calendar file for the session, so it lands in whatever calendar the person uses. */
-export function sessionIcs(start: Date): string {
+/** A link that opens Google Calendar with the session filled in, repeating every Friday. */
+export function googleCalendarUrl(start: Date): string {
   const end = new Date(start.getTime() + 3600_000)
-  return [
-    'BEGIN:VCALENDAR',
-    'VERSION:2.0',
-    'PRODID:-//Pade//Friday//EN',
-    'BEGIN:VEVENT',
-    `UID:pade-${stamp(start)}@pade`,
-    `DTSTAMP:${stamp(new Date(0))}`,
-    `DTSTART:${stamp(start)}`,
-    `DTEND:${stamp(end)}`,
-    'SUMMARY:Pàdé Friday',
-    'DESCRIPTION:Five-minute conversations with new people in Lagos. Find a quiet spot and charge your phone.',
-    'BEGIN:VALARM',
-    'TRIGGER:-PT30M',
-    'ACTION:DISPLAY',
-    'DESCRIPTION:Pàdé starts in 30 minutes',
-    'END:VALARM',
-    'END:VEVENT',
-    'END:VCALENDAR',
-  ].join('\r\n')
+  const q = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: 'Pàdé Friday',
+    dates: `${stamp(start)}/${stamp(end)}`,
+    details: 'Five-minute conversations with new people in Lagos. Find a quiet spot and charge your phone.',
+    ctz: 'Africa/Lagos',
+    recur: 'RRULE:FREQ=WEEKLY;BYDAY=FR',
+  })
+  return `https://calendar.google.com/calendar/render?${q.toString()}`
 }
