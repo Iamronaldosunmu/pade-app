@@ -1,0 +1,24 @@
+.pp { height: 100%; overflow-y: auto; max-width: 560px; margin: 0 auto; padding: 28px 16px 110px; }
+.pp p { max-width: none; }
+.pp-h { font: 800 34px/1 var(--display); letter-spacing: 0.01em; text-transform: uppercase; margin: 8px 0 14px; }
+.pp-sample { margin: 0 0 16px; padding: 10px 14px; border: 1px dashed var(--line); border-radius: 12px; color: var(--muted); font: 500 14px/1.4 var(--text); }
+.pp-empty { color: var(--muted); font: 500 16px/1.5 var(--text); }
+.pp-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.pp-card { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 16px; }
+.pp-top { display: flex; gap: 14px; align-items: center; }
+.pp-av { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; flex: none; background: var(--line); }
+.pp-init { display: grid; place-items: center; font: 800 26px var(--display); color: var(--gold); }
+.pp-who h2 { margin: 0; font: 700 22px/1.1 var(--text); display: flex; gap: 8px; align-items: baseline; }
+.pp-who h2 span { font: 500 16px var(--mono); color: var(--muted); }
+.pp-who p { margin: 4px 0 0; color: var(--muted); font: 500 15px/1.3 var(--text); }
+.pp-take { margin: 14px 0 0; font: 500 17px/1.4 var(--text); }
+.pp-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
+.pp-date { font: 500 13px var(--mono); color: var(--muted); letter-spacing: 0.03em; }
+.pp-say { min-height: 44px; display: inline-flex; align-items: center; gap: 8px; padding: 0 16px; border-radius: 999px; background: var(--gold); color: var(--ground); font: 700 15px var(--text); text-decoration: none; }
+.pp-say b { font-weight: 600; opacity: 0.75; }
+.pp-say:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+.tabs { position: fixed; left: 0; right: 0; bottom: 0; display: flex; justify-content: center; gap: 8px; padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); background: rgba(11, 12, 15, 0.92); border-top: 1px solid var(--line); backdrop-filter: blur(8px); z-index: 5; }
+.tabs button { flex: 1; max-width: 220px; min-height: 48px; border-radius: 14px; border: 0; background: transparent; color: var(--muted); font: 700 16px var(--text); }
+.tabs button[aria-current='page'] { color: var(--gold); background: var(--surface); }
+.tabs button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }

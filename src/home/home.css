@@ -1,4 +1,4 @@
-.hm { height: 100%; overflow-y: auto; overflow-x: hidden; max-width: 560px; margin: 0 auto; padding: 0 20px calc(28px + env(safe-area-inset-bottom)); }
+.hm { height: 100%; overflow-y: auto; overflow-x: hidden; max-width: 560px; margin: 0 auto; padding: 0 20px calc(100px + env(safe-area-inset-bottom)); }
 .hm-top { display: flex; justify-content: space-between; align-items: center; padding-top: calc(14px + env(safe-area-inset-top)); }
 .hm-top .wm { font-size: 34px; }
 .hm-out { min-height: 44px; padding: 0 12px; border: 0; background: none; color: var(--ink-muted); font: 600 14px var(--text); }

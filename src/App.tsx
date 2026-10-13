@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { fetchProfile } from './db/profiles'
 import { Home } from './home/Home'
+import { People } from './people/People'
 import { firstName, signOutRemote, type Provider } from './onboarding/auth'
 import { Onboarding } from './onboarding/Onboarding'
 import { clearProgress, loadProgress, loadSignedUp, SAVE_KEY, STEPS, type StepId } from './onboarding/progress'
@@ -9,12 +10,14 @@ import type { Profile } from './onboarding/types'
 import { supabase, remoteEnabled } from './lib/supabase'
 import './app.css'
 
+type Tab = 'home' | 'people'
 type View = { kind: 'onboarding' } | { kind: 'home' } | { kind: 'edit'; step: StepId }
 
 const store = (i: number, p: Profile) => { try { localStorage.setItem(SAVE_KEY, JSON.stringify({ i, p })) } catch { /* private mode */ } }
 
 export default function App() {
   const [view, setView] = useState<View>(() => (loadSignedUp() ? { kind: 'home' } : { kind: 'onboarding' }))
+  const [tab, setTab] = useState<Tab>('home')
   const [round, setRound] = useState(0) // bumps to remount a fresh form after signing in or out
   const [ready, setReady] = useState(!remoteEnabled)
   const userId = useRef<string | null>(null)
@@ -62,7 +65,15 @@ export default function App() {
     <div className="app-onb">
       {view.kind === 'edit' && <Onboarding key={view.step} edit={view.step} onExit={home} onHome={home} />}
       {signedUp ? (
-        <Home profile={signedUp.profile} userId={uid} onEdit={(step) => setView({ kind: 'edit', step })} onSignOut={() => { void signOutRemote(); clearProgress(); setRound((n) => n + 1); setView({ kind: 'onboarding' }) }} />
+        <>
+          {tab === 'home' ? (
+            <Home profile={signedUp.profile} userId={uid} onEdit={(step) => setView({ kind: 'edit', step })} onSignOut={() => { void signOutRemote(); clearProgress(); setTab('home'); setRound((n) => n + 1); setView({ kind: 'onboarding' }) }} />
+          ) : <People />}
+          <nav className="tabs" aria-label="Main">
+            <button type="button" aria-current={tab === 'home' ? 'page' : undefined} onClick={() => setTab('home')}>Home</button>
+            <button type="button" aria-current={tab === 'people' ? 'page' : undefined} onClick={() => setTab('people')}>People</button>
+          </nav>
+        </>
       ) : (
         view.kind !== 'edit' && <Onboarding key={round} onHome={home} />
       )}
