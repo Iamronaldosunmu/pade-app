@@ -389,6 +389,32 @@ function Final({ p, when, onPractice }: { p: Profile; when: Date; onPractice: ()
   const [note, setNote] = useState('')
   const [style, setStyle] = useState<ShareOpts['style']>(DEFAULT_SHARE.style)
   const [big, setBig] = useState('') // data URL of the card while it is open full screen
+  const dlg = useRef<HTMLDialogElement>(null)
+  const bigImg = useRef<HTMLImageElement>(null)
+  const from = useRef<DOMRect | null>(null)
+  const closing = useRef(false)
+  const FLY = { duration: 440, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)', fill: 'both' as const }
+  /** The card as a shared element: it grows out of its place on the page and shrinks back into it. */
+  const fly = (to: 'open' | 'close') => {
+    const d = dlg.current, img = bigImg.current, thumb = card.current
+    if (!d || !img) return
+    const first = to === 'open' ? from.current : thumb?.getBoundingClientRect()
+    const last = img.getBoundingClientRect()
+    if (!first || reducedMotion()) { if (to === 'close') setBig(''); return }
+    const hop = `translate(${first.left - last.left}px, ${first.top - last.top}px) scale(${first.width / last.width})`
+    const a = to === 'open' ? [{ transform: hop }, { transform: 'none' }] : [{ transform: 'none' }, { transform: hop }]
+    img.animate(a, FLY)
+    const fade = d.animate({ opacity: to === 'open' ? [0, 1] : [1, 0] }, { ...FLY, duration: to === 'open' ? 300 : 360 })
+    if (to === 'close') fade.onfinish = () => { closing.current = false; setBig('') }
+  }
+  const closeBig = () => { if (closing.current) return; closing.current = true; if (reducedMotion()) { closing.current = false; setBig(''); return } fly('close') }
+  useEffect(() => {
+    const d = dlg.current
+    if (!big || !d) return
+    if (!d.open) d.showModal()
+    fly('open')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [big])
   const opts: ShareOpts = { ...DEFAULT_SHARE, style }
   useEffect(() => { if (card.current) void drawShareCard(p, card.current, { ...DEFAULT_SHARE, style }) }, [p, style])
   const addCal = () => {
@@ -422,7 +448,7 @@ function Final({ p, when, onPractice }: { p: Profile; when: Date; onPractice: ()
   return (
     <div className="ob-q ob-final sh">
       <Head title={`You are in, ${p.name}.`} hint="Share your ticket and tell someone you are coming." />
-      <button type="button" className="sh-open" aria-label="View your ticket full screen" onClick={() => { if (card.current) { tick(); setBig(card.current.toDataURL('image/png')) } }}>
+      <button type="button" className={`sh-open${big ? ' lifted' : ''}`} aria-label="View your ticket full screen" onClick={() => { if (card.current) { tick(); from.current = card.current.getBoundingClientRect(); setBig(card.current.toDataURL('image/png')) } }}>
         <canvas className="share-card" ref={card} role="img" aria-label="Your Pàdé ticket, ready to share" />
       </button>
       <div className="sh-dots" role="radiogroup" aria-label="Colour">
@@ -435,9 +461,9 @@ function Final({ p, when, onPractice }: { p: Profile; when: Date; onPractice: ()
         <button className="ob-link" onClick={onPractice}>Try a practice call</button>
       </div>
       {big && (
-        <dialog className="lb" aria-label="Your ticket, full screen" ref={(d) => { if (d && !d.open) d.showModal() }} onClose={() => setBig('')} onClick={() => setBig('')}>
-          <img src={big} alt="Your Pàdé ticket, full size" />
-          <button type="button" className="lb-x" aria-label="Close" autoFocus onClick={() => setBig('')}>×</button>
+        <dialog className="lb" ref={dlg} aria-label="Your ticket, full screen" onCancel={(e) => { e.preventDefault(); closeBig() }} onClose={() => setBig('')} onClick={closeBig}>
+          <img ref={bigImg} src={big} alt="Your Pàdé ticket, full size" />
+          <button type="button" className="lb-x" aria-label="Close" autoFocus onClick={closeBig}>×</button>
         </dialog>
       )}
     </div>
