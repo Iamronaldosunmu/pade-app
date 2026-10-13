@@ -28,7 +28,7 @@ function loadProgress(): { i: number; p: Profile } {
   return { i: 0, p: emptyProfile }
 }
 
-export function Onboarding({ onPractice }: { onPractice: () => void }) {
+export function Onboarding() {
   const saved = useState(loadProgress)[0]
   const [i, setI] = useState(saved.i)
   const [p, setP] = useState<Profile>(saved.p)
@@ -75,7 +75,7 @@ export function Onboarding({ onPractice }: { onPractice: () => void }) {
         {step === 'takes' && <Takes onSpark={() => setSpark((n) => n + 1)} value={p.takes} onLive={(takes) => set({ takes })} onNext={(takes) => { set({ takes }); next() }} />}
         {step === 'contact' && <Contact p={p} onLive={(patch) => set(patch)} onNext={(patch) => { set(patch); next() }} />}
         {step === 'photo' && <Photo photo={p.photo} onLive={(photo) => set({ photo, hasPhoto: !!photo })} onNext={() => next()} />}
-        {step === 'ticket' && <Final p={p} when={when} onPractice={onPractice} />}
+        {step === 'ticket' && <Final p={p} when={when} />}
         </div>
       </div>
     </div>
@@ -383,7 +383,7 @@ const LOOKS: { id: ShareOpts['style']; label: string; bg: string }[] = [
 ]
 
 /** One screen: your ticket as a shareable card, a colour if you care, and the share button. */
-function Final({ p, when, onPractice }: { p: Profile; when: Date; onPractice: () => void }) {
+function Final({ p, when }: { p: Profile; when: Date }) {
   useEffect(() => { thud() }, [])
   const card = useRef<HTMLCanvasElement>(null)
   const [note, setNote] = useState('')
@@ -455,7 +455,6 @@ function Final({ p, when, onPractice }: { p: Profile; when: Date; onPractice: ()
         <button className="ob-next" data-autofocus onClick={share}>Share my ticket</button>
         {note && <p className="ob-why" role="status">{note}</p>}
         <a className="ob-link" href={googleCalendarUrl(when)} target="_blank" rel="noopener noreferrer">Add to Google Calendar</a>
-        <button className="ob-link" onClick={onPractice}>Try a practice call</button>
       </div>
       {big && (
         <dialog className="lb" ref={dlg} aria-label="Your ticket, full screen" onCancel={(e) => { e.preventDefault(); closeBig() }} onClose={() => setBig('')} onClick={closeBig}>
