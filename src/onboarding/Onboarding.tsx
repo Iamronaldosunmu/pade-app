@@ -388,6 +388,7 @@ function Final({ p, when, onPractice }: { p: Profile; when: Date; onPractice: ()
   const card = useRef<HTMLCanvasElement>(null)
   const [note, setNote] = useState('')
   const [style, setStyle] = useState<ShareOpts['style']>(DEFAULT_SHARE.style)
+  const [big, setBig] = useState('') // data URL of the card while it is open full screen
   const opts: ShareOpts = { ...DEFAULT_SHARE, style }
   useEffect(() => { if (card.current) void drawShareCard(p, card.current, { ...DEFAULT_SHARE, style }) }, [p, style])
   const addCal = () => {
@@ -421,7 +422,9 @@ function Final({ p, when, onPractice }: { p: Profile; when: Date; onPractice: ()
   return (
     <div className="ob-q ob-final sh">
       <Head title={`You are in, ${p.name}.`} hint="Share your ticket and tell someone you are coming." />
-      <canvas className="share-card" ref={card} role="img" aria-label="Your Pàdé ticket, ready to share" />
+      <button type="button" className="sh-open" aria-label="View your ticket full screen" onClick={() => { if (card.current) { tick(); setBig(card.current.toDataURL('image/png')) } }}>
+        <canvas className="share-card" ref={card} role="img" aria-label="Your Pàdé ticket, ready to share" />
+      </button>
       <div className="sh-dots" role="radiogroup" aria-label="Colour">
         {LOOKS.map((l) => <button key={l.id} type="button" role="radio" aria-checked={style === l.id} aria-label={l.label} style={{ background: l.bg }} onClick={() => { tick(); setStyle(l.id) }} />)}
       </div>
@@ -431,6 +434,12 @@ function Final({ p, when, onPractice }: { p: Profile; when: Date; onPractice: ()
         <button className="ob-link" onClick={addCal}>Add to calendar</button>
         <button className="ob-link" onClick={onPractice}>Try a practice call</button>
       </div>
+      {big && (
+        <dialog className="lb" aria-label="Your ticket, full screen" ref={(d) => { if (d && !d.open) d.showModal() }} onClose={() => setBig('')} onClick={() => setBig('')}>
+          <img src={big} alt="Your Pàdé ticket, full size" />
+          <button type="button" className="lb-x" aria-label="Close" autoFocus onClick={() => setBig('')}>×</button>
+        </dialog>
+      )}
     </div>
   )
 }

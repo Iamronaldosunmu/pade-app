@@ -330,3 +330,15 @@
 .sh-dots { display: flex; gap: 14px; justify-content: center; }
 .sh-dots button { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--line); transition: transform 0.25s var(--ease), border-color 0.25s var(--ease); }
 .sh-dots button[aria-checked='true'] { border-color: var(--gold); transform: scale(1.12); box-shadow: 0 0 0 3px var(--ground), 0 0 0 5px var(--gold); }
+
+/* full-screen view of the share card */
+.sh-open { display: block; align-self: center; padding: 0; border: 0; background: none; cursor: zoom-in; border-radius: 14px; transition: transform 0.3s var(--ease); }
+.sh-open:hover { transform: translateY(-3px); }
+.lb { width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; background: rgba(5, 6, 8, 0.95); color: var(--ink); cursor: zoom-out; }
+.lb[open] { display: grid; place-items: center; animation: lbIn 0.25s var(--ease); }
+.lb::backdrop { background: rgba(5, 6, 8, 0.95); }
+.lb img { height: min(94dvh, 1100px); max-width: 94vw; width: auto; object-fit: contain; border-radius: 20px; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6); animation: lbPop 0.35s var(--ease); }
+.lb-x { position: absolute; top: 14px; right: 14px; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 400 26px/1 var(--text); cursor: pointer; }
+@keyframes lbIn { from { opacity: 0; } }
+@keyframes lbPop { from { transform: scale(0.94); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .lb[open], .lb img, .sh-open { animation: none; transition: none; } }
