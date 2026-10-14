@@ -73,7 +73,8 @@
   .pp-h { font-size: 88px; }
   .pp-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 24px; }
 
-  .ch-wrap { display: grid; grid-template-columns: 400px minmax(0, 1fr); }
+  .ch-wrap { display: grid; grid-template-columns: 400px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); }
+  .th-pane { min-height: 0; }
   .ch-wrap.open > .ch { display: block; }
   .ch-wrap:not(.open) > .th-pane { display: block; }
   .ch { max-width: none; padding: 56px 24px 24px 40px; }
@@ -84,8 +85,9 @@
   .th { max-width: none; }
   .th-back { display: none; }
   .th-top { padding-top: 24px; }
-  .th-msgs, .th-form, .th-err { width: 100%; max-width: 760px; margin-inline: auto; }
+  .th-msgs, .th-form, .th-err, .th-open { width: 100%; max-width: 760px; margin-inline: auto; }
   .th-form { padding-bottom: 24px; }
+  .th-new { bottom: 104px; }
   .th-menu { top: 80px; }
 }
 

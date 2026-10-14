@@ -12,7 +12,7 @@ export interface Chat {
   unread: number
 }
 
-export interface Msg { id: string; mine: boolean; body: string; at: string }
+export interface Msg { id: string; mine: boolean; body: string; at: string; /** set only on messages you sent that have not landed yet */ status?: 'sending' | 'failed' }
 
 export const MAX_LEN = 1000
 
@@ -114,3 +114,43 @@ export const SAMPLE_CHATS: Chat[] = [
   { personId: 's2', name: 'Tobi', photo: '', lastBody: 'The danfo navigators take. I need the full story.', lastAt: ago(120), lastMine: true, unread: 0 },
   { personId: 's3', name: 'Zainab', photo: '', lastBody: '', lastAt: '', lastMine: false, unread: 0 },
 ]
+
+/* ---------- laying out a conversation ---------- */
+
+export type Row =
+  | { kind: 'day'; key: string; label: string }
+  | { kind: 'msg'; key: string; msg: Msg; first: boolean; last: boolean }
+
+const lagosDay = (d: Date) => d.toLocaleDateString('en-CA', { timeZone: 'Africa/Lagos' })
+
+/** "Today", "Yesterday", or "Fri 2 Oct". */
+export function dayLabel(iso: string, now: Date = new Date()): string {
+  const d = new Date(iso)
+  if (lagosDay(d) === lagosDay(now)) return 'Today'
+  if (lagosDay(d) === lagosDay(new Date(now.getTime() - 86400_000))) return 'Yesterday'
+  return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'Africa/Lagos' }).replace(',', '')
+}
+
+const GROUP_GAP_MS = 5 * 60_000
+
+/** Adds a day heading whenever the day changes, and marks the first and last bubble of each run from one person. */
+export function layoutThread(msgs: Msg[], now: Date = new Date()): Row[] {
+  const rows: Row[] = []
+  msgs.forEach((m, i) => {
+    const prev = msgs[i - 1]
+    const next = msgs[i + 1]
+    const newDay = !prev || lagosDay(new Date(prev.at)) !== lagosDay(new Date(m.at))
+    if (newDay) rows.push({ kind: 'day', key: `d${m.id}`, label: dayLabel(m.at, now) })
+    const joinsPrev = !!prev && !newDay && prev.mine === m.mine && new Date(m.at).getTime() - new Date(prev.at).getTime() < GROUP_GAP_MS
+    const nextNewDay = !!next && lagosDay(new Date(next.at)) !== lagosDay(new Date(m.at))
+    const joinsNext = !!next && !nextNewDay && next.mine === m.mine && new Date(next.at).getTime() - new Date(m.at).getTime() < GROUP_GAP_MS
+    rows.push({ kind: 'msg', key: m.id, msg: m, first: !joinsPrev, last: !joinsNext })
+  })
+  return rows
+}
+
+/** Things to say when a conversation is empty. The first one uses their hot take when they have one. */
+export function openers(take?: string): string[] {
+  const list = ['How has your week been?', 'What did you think of our five minutes?', 'What are you up to this weekend?']
+  return take ? [`Okay, I need the story behind “${take}”`, ...list] : list
+}
