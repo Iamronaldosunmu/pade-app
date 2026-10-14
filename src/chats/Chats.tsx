@@ -12,9 +12,10 @@ interface Props {
   openWith: string | null
   onOpenChange: (open: boolean) => void
   onUnread: (n: number) => void
+  onSeeFridays: () => void
 }
 
-export function Chats({ userId, openWith, onOpenChange, onUnread }: Props) {
+export function Chats({ userId, openWith, onOpenChange, onUnread, onSeeFridays }: Props) {
   const [chats, setChats] = useState<Chat[] | null>(remoteEnabled ? null : SAMPLE_CHATS)
   const [open, setOpen] = useState<string | null>(openWith)
   const [failed, setFailed] = useState(false)
@@ -42,6 +43,7 @@ export function Chats({ userId, openWith, onOpenChange, onUnread }: Props) {
       {failed && <p className="ch-empty" role="alert">Could not load your chats. Check your connection and try again.</p>}
       {chats === null && !failed && <p className="ch-empty" aria-busy="true">Loading…</p>}
       {chats?.length === 0 && <p className="ch-empty">No chats yet. After a Friday, the people you both wanted to keep talking to show up here.</p>}
+      {chats?.length === 0 && <button type="button" className="empty-cta" onClick={onSeeFridays}>See the Fridays</button>}
       <ul className="ch-list">
         {sorted.map((c) => (
           <li key={c.personId}>

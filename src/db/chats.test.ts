@@ -29,7 +29,7 @@ beforeAll(async () => {
     create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
     grant usage on schema auth to authenticated;
   `)
-  for (const f of ['0001_init', '0002_chats']) await db.exec(readFileSync(new URL(`../../supabase/migrations/${f}.sql`, import.meta.url), 'utf8'))
+  for (const f of ['0001_init', '0002_chats', '0003_private_answers']) await db.exec(readFileSync(new URL(`../../supabase/migrations/${f}.sql`, import.meta.url), 'utf8'))
   await db.exec(`
     insert into auth.users values ('${A}'), ('${B}'), ('${C}'), ('${D}');
     ${profile(A, 'Ada')}; ${profile(B, 'Bayo')}; ${profile(C, 'Chi')}; ${profile(D, 'Dayo')};
@@ -105,5 +105,23 @@ describe('reports and blocks', () => {
     await db.exec(`insert into public.blocks (blocker_id, blocked_id) values ('${A}', '${C}')`)
     await as(C)
     expect((await db.query('select * from public.blocks')).rows).toHaveLength(0)
+  })
+})
+
+describe('private answers', () => {
+  it('are readable only by their owner, even by people they have met', async () => {
+    await as(A)
+    await db.exec(`insert into public.private_answers (user_id, intent, topics, pace) values ('${A}', 'date', '{Music,Tech}', 'warm')`)
+    expect((await db.query('select * from public.private_answers')).rows).toHaveLength(1)
+    await as(B) // met A
+    expect((await db.query('select * from public.private_answers')).rows).toHaveLength(0)
+    await as(C)
+    expect((await db.query('select * from public.private_answers')).rows).toHaveLength(0)
+  })
+  it('cannot be written for someone else, or with values outside the list', async () => {
+    await as(C)
+    await expect(db.exec(`insert into public.private_answers (user_id, intent) values ('${A}', 'date')`)).rejects.toThrow()
+    await expect(db.exec(`insert into public.private_answers (user_id, intent) values ('${C}', 'marry')`)).rejects.toThrow()
+    await expect(db.exec(`insert into public.private_answers (user_id, topics) values ('${C}', '{a,b,c,d,e}')`)).rejects.toThrow()
   })
 })

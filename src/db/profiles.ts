@@ -41,6 +41,13 @@ export const fromRow = (r: ProfileRow, provider: Provider): Profile => ({
   hasPhoto: !!r.photo,
 })
 
+/** Private answers, stored apart from the profile so nobody you meet can read them. */
+export const toAnswersRow = (id: string, p: Profile) => ({
+  user_id: id, intent: p.intent || null, topics: p.topics.slice(0, 4), pace: p.pace || null,
+})
+interface AnswersRow { intent: Profile['intent'] | null; topics: string[] | null; pace: Profile['pace'] | null }
+export const withAnswers = (p: Profile, a: AnswersRow | null): Profile => (a ? { ...p, intent: a.intent ?? '', topics: a.topics ?? [], pace: a.pace ?? '' } : p)
+
 /** Enough filled in that the database will accept it. Until then nothing is sent. */
 export const savable = (p: Profile) =>
   p.name.trim().length > 0 && (p.age ?? 0) >= 18 && (p.area === 'Island' || p.area === 'Mainland') && p.handle.length > 0
@@ -49,13 +56,19 @@ export async function fetchProfile(userId: string, provider: Provider): Promise<
   if (!supabase) return null
   const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle()
   if (error) throw error
-  return data ? fromRow(data as ProfileRow, provider) : null
+  if (!data) return null
+  const { data: a } = await supabase.from('private_answers').select('intent,topics,pace').eq('user_id', userId).maybeSingle()
+  return withAnswers(fromRow(data as ProfileRow, provider), a as AnswersRow | null)
 }
 
 export async function saveProfile(userId: string, p: Profile) {
   if (!supabase || !savable(p)) return
   const { error } = await supabase.from('profiles').upsert(toRow(userId, p))
   if (error) throw error
+  if (p.intent || p.topics.length || p.pace) {
+    const { error: e2 } = await supabase.from('private_answers').upsert(toAnswersRow(userId, p))
+    if (e2) throw e2
+  }
 }
 
 /** RSVP for one Friday. Creates the session row on first use through the one allowed door. */

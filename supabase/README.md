@@ -24,4 +24,5 @@ Without those two variables the app runs in local mode: everything stays on the 
 - A person's contact handle and photo are readable only by them and by people they have been matched with.
 - The app cannot create matches or sessions; only the server (service role) writes matches. `ensure_session` is the one allowed door for sessions, and only for Friday 9pm Lagos.
 - RSVPs are private to each person.
-- Chats (`0002_chats.sql`): only the two people in a conversation can read it; you can only message someone you have met, and either side blocking ends new messages. Reports are write-only from the app. Run both migrations, in order. Turn on Realtime for `messages` if the migration did not (Database → Replication).
+- Chats (`0002_chats.sql`): only the two people in a conversation can read it; you can only message someone you have met, and either side blocking ends new messages. Reports are write-only from the app. Run all migrations in order (0001, 0002, 0003). Turn on Realtime for `messages` if the migration did not (Database → Replication).
+- Private answers (`0003_private_answers.sql`): what you are here for, topics and pace live in their own table that only you can read, never in `profiles`, so nobody you meet can see them.

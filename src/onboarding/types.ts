@@ -17,6 +17,10 @@ export interface Profile {
   contactKind: ContactKind
   /** Handle on that network, without the @. Shared only when both people want to keep talking. */
   handle: string
+  /** Private: only used to decide who meets whom. */
+  intent: '' | 'date' | 'friends' | 'either'
+  topics: string[]
+  pace: '' | 'quick' | 'warm' | 'listen'
   hasPhoto: boolean
   /** small square JPEG data URL of the chosen photo, kept on this device only */
   photo: string
@@ -33,6 +37,9 @@ export const emptyProfile: Profile = {
   takes: [],
   contactKind: 'instagram',
   handle: '',
+  intent: '',
+  topics: [],
+  pace: '',
   hasPhoto: false,
   photo: '',
 }

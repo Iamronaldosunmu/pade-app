@@ -354,3 +354,9 @@ a.ob-link { display: inline-flex; align-items: center; justify-content: center; 
 .auth-send[aria-disabled='true'] { opacity: 0.35; }
 .auth-note, .auth-err { margin: 12px 2px 0; font: 500 15px/1.4 var(--text); color: var(--muted); }
 .auth-err { color: var(--ink); }
+
+.ob-chips { display: flex; flex-wrap: wrap; gap: 10px; }
+.ob-chips button { min-height: 52px; padding: 0 20px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font: 700 17px var(--text); transition: background-color 0.25s, color 0.25s, transform 0.2s var(--ease); }
+.ob-chips button:active { transform: scale(0.97); }
+.ob-chips button[aria-pressed='true'] { background: var(--gold); color: var(--ground); border-color: var(--gold); }
+.ob-chips button[aria-disabled='true'] { opacity: 0.35; }

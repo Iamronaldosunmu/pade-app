@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { AREAS, TAKE_IDEAS } from './data'
+import { AREAS, INTENTS, MAX_TOPICS, PACES, TAKE_IDEAS, TOPICS } from './data'
 import { sendEmailLink, signInWithGoogle, validEmail, type Provider } from './auth'
 import { chime, reducedMotion, thud, tick } from './feel'
 import { Ticket } from './Ticket'
@@ -30,7 +30,7 @@ export function Onboarding({ edit = null, onExit, onHome }: { edit?: StepId | nu
   const stage = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    try { localStorage.setItem(SAVE_KEY, JSON.stringify({ i, p })) } catch { /* private mode */ }
+    try { localStorage.setItem(SAVE_KEY, JSON.stringify({ i, n: STEPS.length, p })) } catch { /* private mode */ }
   }, [i, p])
 
   // With a real account, keep the saved copy up to date a moment after each change.
@@ -71,6 +71,9 @@ export function Onboarding({ edit = null, onExit, onHome }: { edit?: StepId | nu
         {step === 'takes' && <Takes onSpark={() => setSpark((n) => n + 1)} value={p.takes} onLive={(takes) => set({ takes })} onNext={(takes) => { set({ takes }); advance() }} />}
         {step === 'contact' && <Contact p={p} onLive={(patch) => set(patch)} onNext={(patch) => { set(patch); advance() }} />}
         {step === 'photo' && <Photo photo={p.photo} onLive={(photo) => set({ photo, hasPhoto: !!photo })} onNext={() => advance()} />}
+        {step === 'here' && <Here value={p.intent} onLive={(intent) => set({ intent })} onNext={(intent) => { set({ intent }); advance() }} onSkip={advance} />}
+        {step === 'topics' && <Topics value={p.topics} onLive={(topics) => set({ topics })} onNext={(topics) => { set({ topics }); advance() }} onSkip={advance} />}
+        {step === 'pace' && <Pace value={p.pace} onLive={(pace) => set({ pace })} onNext={(pace) => { set({ pace }); advance() }} onSkip={advance} />}
         {step === 'ticket' && <Final p={p} onHome={edit ? advance : () => onHome?.()} home={edit ? 'Back to my home' : 'Finish sign up'} />}
         </div>
       </div>
@@ -198,6 +201,52 @@ function Area({ value, onLive, onNext }: { value: string; onLive: (v: string) =>
       <div className="ob-opts" role="radiogroup" aria-label="Area">
         {AREAS.map((a, k) => (
           <button key={a} type="button" role="radio" aria-checked={v === a} data-autofocus={k === 0 ? '' : undefined} onClick={() => { tick(); setV(a); onLive(a) }}>{a}</button>
+        ))}
+      </div>
+    </Q>
+  )
+}
+
+const PRIVATE = 'Private. Only used to decide who you meet.'
+
+function Here({ value, onLive, onNext, onSkip }: { value: Profile['intent']; onLive: (v: Profile['intent']) => void; onNext: (v: Profile['intent']) => void; onSkip: () => void }) {
+  const [v, setV] = useState(value)
+  return (
+    <Q title="What are you here for?" hint={PRIVATE} ok={!!v} onNext={() => v && onNext(v)} onSkip={onSkip}>
+      <div className="ob-opts" role="radiogroup" aria-label="What you are here for">
+        {INTENTS.map((o, k) => (
+          <button key={o.id} type="button" role="radio" aria-checked={v === o.id} data-autofocus={k === 0 ? '' : undefined} onClick={() => { tick(); setV(o.id); onLive(o.id) }}>{o.label}</button>
+        ))}
+      </div>
+    </Q>
+  )
+}
+
+function Topics({ value, onLive, onNext, onSkip }: { value: string[]; onLive: (v: string[]) => void; onNext: (v: string[]) => void; onSkip: () => void }) {
+  const [v, setV] = useState(value)
+  const toggle = (t: string) => {
+    tick()
+    const next = v.includes(t) ? v.filter((x) => x !== t) : v.length < MAX_TOPICS ? [...v, t] : v
+    setV(next); onLive(next)
+  }
+  return (
+    <Q title="What do you like talking about?" hint={`Pick up to ${MAX_TOPICS}. ${PRIVATE}`} ok={v.length > 0} onNext={() => onNext(v)} onSkip={onSkip}>
+      <div className="ob-chips" role="group" aria-label="Topics">
+        {TOPICS.map((t, k) => (
+          <button key={t} type="button" aria-pressed={v.includes(t)} aria-disabled={!v.includes(t) && v.length >= MAX_TOPICS} data-autofocus={k === 0 ? '' : undefined} onClick={() => toggle(t)}>{t}</button>
+        ))}
+      </div>
+    </Q>
+  )
+}
+
+function Pace({ value, onLive, onNext, onSkip }: { value: Profile['pace']; onLive: (v: Profile['pace']) => void; onNext: (v: Profile['pace']) => void; onSkip: () => void }) {
+  const [v, setV] = useState(value)
+  return (
+    <Q title="How are you with new people?" hint={PRIVATE} ok={!!v} onNext={() => v && onNext(v)} onSkip={onSkip}>
+      <div className="ob-opts" role="radiogroup" aria-label="How you are with new people">
+        {PACES.map((o, k) => (
+          <button key={o.id} type="button" role="radio" aria-checked={v === o.id} data-autofocus={k === 0 ? '' : undefined} onClick={() => { tick(); setV(o.id); onLive(o.id) }}>{o.label}</button>
         ))}
       </div>
     </Q>

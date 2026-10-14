@@ -15,3 +15,18 @@ export const TAKE_IDEAS = [
   'The mainland is better than the island.',
   'Group chats should be deleted every December.',
 ]
+
+export const INTENTS = [
+  { id: 'date', label: 'Someone to date' },
+  { id: 'friends', label: 'New friends' },
+  { id: 'either', label: 'Open to either' },
+] as const
+
+export const TOPICS = ['Music', 'Football', 'Tech', 'Business', 'Faith', 'Food', 'Film', 'Travel', 'Fashion', 'Books', 'Fitness', 'Politics', 'Art', 'Gaming']
+export const MAX_TOPICS = 4
+
+export const PACES = [
+  { id: 'quick', label: 'Quick to start talking' },
+  { id: 'warm', label: 'Quiet at first, better once warmed up' },
+  { id: 'listen', label: 'I like to listen first' },
+] as const

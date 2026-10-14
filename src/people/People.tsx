@@ -5,7 +5,7 @@ import './people.css'
 
 const met = (iso: string) => new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'Africa/Lagos' })
 
-export function People({ onMessage }: { onMessage: (personId: string) => void }) {
+export function People({ onMessage, onSeeFridays }: { onMessage: (personId: string) => void; onSeeFridays: () => void }) {
   const [list, setList] = useState<Person[] | null>(remoteEnabled ? null : SAMPLE_PEOPLE)
   const [failed, setFailed] = useState(false)
   useEffect(() => {
@@ -24,6 +24,7 @@ export function People({ onMessage }: { onMessage: (personId: string) => void })
       {list?.length === 0 && (
         <p className="pp-empty">Nobody here yet. After a Friday, the people you both wanted to keep talking to will show up here, with a way to reach them.</p>
       )}
+      {list?.length === 0 && <button type="button" className="empty-cta" onClick={onSeeFridays}>See the Fridays</button>}
       <ul className="pp-list">
         {list?.map((x) => (
           <li key={x.id} className="pp-card">

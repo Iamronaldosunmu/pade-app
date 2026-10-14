@@ -79,8 +79,8 @@ export default function App() {
       {signedUp ? (
         <>
           {tab === 'fridays' && <Fridays profile={signedUp.profile} userId={uid} />}
-          {tab === 'people' && <People onMessage={(id) => { setChatWith(id); setTab('chats') }} />}
-          {tab === 'chats' && <Chats key={chatWith ?? 'inbox'} userId={uid} openWith={chatWith} onOpenChange={setInThread} onUnread={setUnread} />}
+          {tab === 'people' && <People onSeeFridays={() => setTab('fridays')} onMessage={(id) => { setChatWith(id); setTab('chats') }} />}
+          {tab === 'chats' && <Chats key={chatWith ?? 'inbox'} userId={uid} openWith={chatWith} onOpenChange={setInThread} onUnread={setUnread} onSeeFridays={() => setTab('fridays')} />}
           {tab === 'me' && <Me profile={signedUp.profile} onEdit={(step) => setView({ kind: 'edit', step })} onSignOut={() => { void signOutRemote(); clearProgress(); setTab('fridays'); setRound((n) => n + 1); setView({ kind: 'onboarding' }) }} />}
           <nav className="tabs" aria-label="Main" hidden={tab === 'chats' && inThread}>
             <span className="tabs-pill" aria-hidden="true" style={{ transform: `translateX(${TABS.findIndex((t) => t.id === tab) * 100}%)` }} />

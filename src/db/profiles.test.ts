@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { fromRow, savable, toRow } from './profiles'
+import { fromRow, savable, toAnswersRow, toRow, withAnswers } from './profiles'
 import { emptyProfile, type Profile } from '../onboarding/types'
 
 const full: Profile = { ...emptyProfile, provider: 'google', name: ' Tolu ', age: 27, area: 'Island', work: 'Designer ', takes: ['a', 'b', 'c'], contactKind: 'x', handle: 'tolu', photo: 'data:image/jpeg;base64,AAA', hasPhoto: true }
@@ -20,5 +20,12 @@ describe('profile rows', () => {
     expect(savable({ ...full, area: '' })).toBe(false)
     expect(savable({ ...full, handle: '' })).toBe(false)
     expect(savable(emptyProfile)).toBe(false)
+  })
+  it('keeps private answers out of the profile row and in their own', () => {
+    const p: Profile = { ...full, intent: 'date', topics: ['Music', 'Tech', 'Food', 'Film', 'Art'], pace: 'warm' }
+    expect(Object.keys(toRow('u1', p))).not.toContain('intent')
+    expect(toAnswersRow('u1', p)).toEqual({ user_id: 'u1', intent: 'date', topics: ['Music', 'Tech', 'Food', 'Film'], pace: 'warm' })
+    expect(withAnswers(full, { intent: 'friends', topics: ['Music'], pace: null })).toMatchObject({ intent: 'friends', topics: ['Music'], pace: '' })
+    expect(withAnswers(full, null)).toBe(full)
   })
 })
