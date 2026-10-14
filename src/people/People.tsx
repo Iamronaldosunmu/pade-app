@@ -5,7 +5,7 @@ import './people.css'
 
 const met = (iso: string) => new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'Africa/Lagos' })
 
-export function People() {
+export function People({ onMessage }: { onMessage: (personId: string) => void }) {
   const [list, setList] = useState<Person[] | null>(remoteEnabled ? null : SAMPLE_PEOPLE)
   const [failed, setFailed] = useState(false)
   useEffect(() => {
@@ -37,9 +37,10 @@ export function People() {
             {x.takes[0] && <p className="pp-take">“{x.takes[0]}”</p>}
             <div className="pp-foot">
               <span className="pp-date">{met(x.metOn)}</span>
-              <a className="pp-say" href={contactUrl(x.contactKind, x.handle)} target="_blank" rel="noopener noreferrer" aria-label={`Message ${x.name} on ${NETWORK[x.contactKind]}`}>
-                {NETWORK[x.contactKind]} <b aria-hidden="true">@{x.handle}</b>
-              </a>
+              <div className="pp-acts">
+                <a className="pp-say ghost" href={contactUrl(x.contactKind, x.handle)} target="_blank" rel="noopener noreferrer" aria-label={`Open ${x.name} on ${NETWORK[x.contactKind]}`}>{NETWORK[x.contactKind]}</a>
+                <button type="button" className="pp-msg" onClick={() => onMessage(x.id)}>Message</button>
+              </div>
             </div>
           </li>
         ))}

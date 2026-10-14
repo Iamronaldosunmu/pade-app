@@ -3,6 +3,7 @@ import type { Session } from '@supabase/supabase-js'
 import { fetchProfile } from './db/profiles'
 import { Fridays } from './home/Fridays'
 import { Me } from './home/Me'
+import { Chats } from './chats/Chats'
 import { People } from './people/People'
 import { firstName, signOutRemote, type Provider } from './onboarding/auth'
 import { Onboarding } from './onboarding/Onboarding'
@@ -11,12 +12,13 @@ import type { Profile } from './onboarding/types'
 import { supabase, remoteEnabled } from './lib/supabase'
 import './app.css'
 
-type Tab = 'fridays' | 'people' | 'me'
+type Tab = 'fridays' | 'people' | 'chats' | 'me'
 type View = { kind: 'onboarding' } | { kind: 'home' } | { kind: 'edit'; step: StepId }
 
 const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: 'fridays', label: 'Fridays', icon: <><rect x="3.5" y="5" width="17" height="15" rx="3.5" /><path d="M8 3v4M16 3v4M3.5 10h17" /></> },
   { id: 'people', label: 'People', icon: <><circle cx="9" cy="9" r="3.4" /><path d="M2.8 19.5c.6-3.3 3-5 6.2-5s5.6 1.7 6.2 5" /><path d="M16 6.2a3.2 3.2 0 0 1 0 5.6M18.4 14.9c1.6.7 2.6 2.1 2.9 4.3" /></> },
+  { id: 'chats', label: 'Chats', icon: <path d="M20.5 11.5c0 4-3.6 7-8.5 7-1.1 0-2.100-.1-3-.4L4 19.500l1.300-3.600C4.200 14.700 3.500 13.200 3.500 11.500c0-4 3.600-7 8.500-7s8.500 3 8.500 7z" /> },
   { id: 'me', label: 'Me', icon: <><circle cx="12" cy="8.5" r="3.8" /><path d="M4.5 20c.8-4 3.6-6 7.5-6s6.7 2 7.5 6" /></> },
 ]
 
@@ -25,6 +27,9 @@ const store = (i: number, p: Profile) => { try { localStorage.setItem(SAVE_KEY, 
 export default function App() {
   const [view, setView] = useState<View>(() => (loadSignedUp() ? { kind: 'home' } : { kind: 'onboarding' }))
   const [tab, setTab] = useState<Tab>('fridays')
+  const [inThread, setInThread] = useState(false)
+  const [unread, setUnread] = useState(0)
+  const [chatWith, setChatWith] = useState<string | null>(null)
   const [round, setRound] = useState(0) // bumps to remount a fresh form after signing in or out
   const [ready, setReady] = useState(!remoteEnabled)
   const userId = useRef<string | null>(null)
@@ -74,14 +79,16 @@ export default function App() {
       {signedUp ? (
         <>
           {tab === 'fridays' && <Fridays profile={signedUp.profile} userId={uid} />}
-          {tab === 'people' && <People />}
+          {tab === 'people' && <People onMessage={(id) => { setChatWith(id); setTab('chats') }} />}
+          {tab === 'chats' && <Chats key={chatWith ?? 'inbox'} userId={uid} openWith={chatWith} onOpenChange={setInThread} onUnread={setUnread} />}
           {tab === 'me' && <Me profile={signedUp.profile} onEdit={(step) => setView({ kind: 'edit', step })} onSignOut={() => { void signOutRemote(); clearProgress(); setTab('fridays'); setRound((n) => n + 1); setView({ kind: 'onboarding' }) }} />}
-          <nav className="tabs" aria-label="Main">
+          <nav className="tabs" aria-label="Main" hidden={tab === 'chats' && inThread}>
             <span className="tabs-pill" aria-hidden="true" style={{ transform: `translateX(${TABS.findIndex((t) => t.id === tab) * 100}%)` }} />
             {TABS.map((t) => (
-              <button key={t.id} type="button" aria-current={tab === t.id ? 'page' : undefined} onClick={() => setTab(t.id)}>
+              <button key={t.id} type="button" aria-current={tab === t.id ? 'page' : undefined} onClick={() => { if (t.id === 'chats') setChatWith(null); setTab(t.id) }}>
                 <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{t.icon}</svg>
                 <span>{t.label}</span>
+                {t.id === 'chats' && unread > 0 && <i className="tabs-badge" aria-label={`${unread} unread`} />}
               </button>
             ))}
           </nav>
