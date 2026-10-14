@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { fetchProfile } from './db/profiles'
-import { Home } from './home/Home'
+import { Fridays } from './home/Fridays'
+import { Me } from './home/Me'
 import { People } from './people/People'
 import { firstName, signOutRemote, type Provider } from './onboarding/auth'
 import { Onboarding } from './onboarding/Onboarding'
@@ -10,14 +11,14 @@ import type { Profile } from './onboarding/types'
 import { supabase, remoteEnabled } from './lib/supabase'
 import './app.css'
 
-type Tab = 'home' | 'people'
+type Tab = 'fridays' | 'people' | 'me'
 type View = { kind: 'onboarding' } | { kind: 'home' } | { kind: 'edit'; step: StepId }
 
 const store = (i: number, p: Profile) => { try { localStorage.setItem(SAVE_KEY, JSON.stringify({ i, p })) } catch { /* private mode */ } }
 
 export default function App() {
   const [view, setView] = useState<View>(() => (loadSignedUp() ? { kind: 'home' } : { kind: 'onboarding' }))
-  const [tab, setTab] = useState<Tab>('home')
+  const [tab, setTab] = useState<Tab>('fridays')
   const [round, setRound] = useState(0) // bumps to remount a fresh form after signing in or out
   const [ready, setReady] = useState(!remoteEnabled)
   const userId = useRef<string | null>(null)
@@ -66,12 +67,13 @@ export default function App() {
       {view.kind === 'edit' && <Onboarding key={view.step} edit={view.step} onExit={home} onHome={home} />}
       {signedUp ? (
         <>
-          {tab === 'home' ? (
-            <Home profile={signedUp.profile} userId={uid} onEdit={(step) => setView({ kind: 'edit', step })} onSignOut={() => { void signOutRemote(); clearProgress(); setTab('home'); setRound((n) => n + 1); setView({ kind: 'onboarding' }) }} />
-          ) : <People />}
+          {tab === 'fridays' && <Fridays profile={signedUp.profile} userId={uid} />}
+          {tab === 'people' && <People />}
+          {tab === 'me' && <Me profile={signedUp.profile} onEdit={(step) => setView({ kind: 'edit', step })} onSignOut={() => { void signOutRemote(); clearProgress(); setTab('fridays'); setRound((n) => n + 1); setView({ kind: 'onboarding' }) }} />}
           <nav className="tabs" aria-label="Main">
-            <button type="button" aria-current={tab === 'home' ? 'page' : undefined} onClick={() => setTab('home')}>Home</button>
-            <button type="button" aria-current={tab === 'people' ? 'page' : undefined} onClick={() => setTab('people')}>People</button>
+            {(['fridays', 'people', 'me'] as const).map((t) => (
+              <button key={t} type="button" aria-current={tab === t ? 'page' : undefined} onClick={() => setTab(t)}>{t === 'fridays' ? 'Fridays' : t === 'people' ? 'People' : 'Me'}</button>
+            ))}
           </nav>
         </>
       ) : (

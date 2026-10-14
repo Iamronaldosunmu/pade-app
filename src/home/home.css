@@ -37,3 +37,16 @@
 .hm-links button, .hm-links a { min-height: 44px; display: inline-flex; align-items: center; padding: 0 12px; border: 0; background: none; color: var(--gold); font: 700 15px var(--text); text-decoration: none; }
 @media (min-width: 900px) { .hm { padding-top: 12px; } .hm-main { gap: 18px; } }
 @media (prefers-reduced-motion: reduce) { .hm-live i { animation: none; } }
+
+.hm-up { list-style: none; margin: 0; padding: 0; }
+.hm-up li { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 52px; border-top: 1px solid var(--line); }
+.hm-up li:first-child { border-top: 0; }
+.hm-up .hm-l { font: 600 16px var(--text); color: var(--ink); }
+.hm-mini { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 4px 0 14px; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: var(--ink); font: 600 14px var(--text); }
+.hm-mini i { width: 38px; height: 24px; border-radius: 999px; background: var(--gold); position: relative; transition: background-color 0.2s; }
+.hm-mini i::after { content: ''; position: absolute; top: 3px; right: 3px; width: 18px; height: 18px; border-radius: 50%; background: var(--ground); transition: transform 0.2s var(--ease); }
+.hm-mini[aria-checked='false'] { color: var(--muted); }
+.hm-mini[aria-checked='false'] i { background: var(--line); }
+.hm-mini[aria-checked='false'] i::after { transform: translateX(-14px); background: var(--muted); }
+.hm-cal { display: inline-flex; align-items: center; min-height: 44px; margin-top: 8px; color: var(--gold); font: 600 15px var(--text); }
+@media (prefers-reduced-motion: reduce) { .hm-mini i, .hm-mini i::after { transition: none; } }
