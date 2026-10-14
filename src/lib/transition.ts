@@ -8,6 +8,26 @@ import { flushSync } from 'react-dom'
  */
 export type Move = 'fwd' | 'back' | 'fade' | 'drill-in' | 'drill-out'
 
+export const STYLES = [
+  { id: 'slide', label: 'Slide', hint: 'Slides in from the side you are heading to' },
+  { id: 'fade', label: 'Fade', hint: 'A calm dissolve, no direction' },
+  { id: 'rise', label: 'Rise', hint: 'Lifts up from below' },
+  { id: 'push', label: 'Push', hint: 'Covers the old page, like a phone' },
+  { id: 'wipe', label: 'Wipe', hint: 'A clean edge reveals the next page' },
+] as const
+export type StyleId = (typeof STYLES)[number]['id']
+const KEY = 'pade.transition'
+
+export function getStyle(): StyleId {
+  try { const v = localStorage.getItem(KEY); if (STYLES.some((s) => s.id === v)) return v as StyleId } catch { /* private mode */ }
+  return 'slide'
+}
+export function setStyle(id: StyleId): void {
+  document.documentElement.dataset.vts = id
+  try { localStorage.setItem(KEY, id) } catch { /* private mode */ }
+}
+if (typeof document !== 'undefined') document.documentElement.dataset.vts = getStyle()
+
 let running: ViewTransition | null = null
 
 export function navigate(move: Move, update: () => void): void {

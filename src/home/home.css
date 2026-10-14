@@ -63,3 +63,9 @@
 @media (prefers-reduced-motion: reduce) { .hm-live i { animation: none; } .hm-switch i::after, .hm-mini i::after { transition: none; } }
 
 .hm-sub { margin: -2px 0 6px; color: var(--ink-muted); font: 500 16px/1.4 var(--text); max-width: none; }
+.vt-pick { display: grid; gap: 8px; margin-top: 6px; }
+.vt-pick button { display: grid; gap: 2px; text-align: left; padding: 12px 16px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); transition: border-color 0.25s var(--ease), background-color 0.25s var(--ease); }
+.vt-pick b { font: 800 17px var(--text); }
+.vt-pick span { font-size: 14px; color: var(--ink-muted); }
+.vt-pick button[aria-checked='true'] { border-color: var(--gold); background: rgba(255, 194, 74, 0.1); }
+.vt-pick button[aria-checked='true'] b { color: var(--gold); }

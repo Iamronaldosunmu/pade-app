@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { STYLES, getStyle, setStyle, type StyleId } from '../lib/transition'
 import { Ticket } from '../onboarding/Ticket'
 import type { StepId } from '../onboarding/progress'
 import { currentSession } from '../onboarding/session-time'
@@ -27,6 +28,7 @@ function Rows({ list, onEdit }: { list: Row[]; onEdit: (s: StepId) => void }) {
 }
 
 export function Me({ profile, onEdit, onSignOut }: { profile: Profile; onEdit: (s: StepId) => void; onSignOut: () => void }) {
+  const [vts, setVts] = useState<StyleId>(getStyle)
   const [sess] = useState(() => currentSession(new Date()))
   const rows: { step: StepId; label: string; value: string }[] = [
     { step: 'name', label: 'Name', value: profile.name },
@@ -72,6 +74,18 @@ export function Me({ profile, onEdit, onSignOut }: { profile: Profile; onEdit: (
           <h2 className="hm-h" id="hm-ans-h">Your answers</h2>
           <p className="hm-sub">{blank > 0 ? `${blank} still blank. Private, and only used to decide who you meet.` : 'Private. Only used to decide who you meet.'}</p>
           <Rows list={answers} onEdit={onEdit} />
+        </section>
+
+        <section className="hm-sec" aria-labelledby="hm-vt-h">
+          <h2 className="hm-h" id="hm-vt-h">Page transitions</h2>
+          <p className="hm-sub">Trying five looks. Pick one, then move between tabs to feel it.</p>
+          <div className="vt-pick" role="radiogroup" aria-labelledby="hm-vt-h">
+            {STYLES.map((s) => (
+              <button key={s.id} type="button" role="radio" aria-checked={vts === s.id} onClick={() => { setStyle(s.id); setVts(s.id) }}>
+                <b>{s.label}</b><span>{s.hint}</span>
+              </button>
+            ))}
+          </div>
         </section>
 
         </div>

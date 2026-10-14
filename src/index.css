@@ -30,15 +30,20 @@ h1, h2, p { margin: 0; text-wrap: balance; }
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
 
-/* Page transitions (see lib/transition.ts). Only the page itself moves; the nav stays put. */
+/* Page transitions (see lib/transition.ts). Only the page moves; the nav stays put.
+   html[data-vts] picks one of five styles: slide, fade, rise, push, wipe. */
 html[data-vt='fwd'] .stage, html[data-vt='back'] .stage,
 html[data-vt='fwd'] .ob-stage, html[data-vt='back'] .ob-stage { view-transition-name: page; }
 html[data-vt='fwd'] .tabs, html[data-vt='back'] .tabs { view-transition-name: nav; }
-html[data-vt='fwd']::view-transition-group(*), html[data-vt='back']::view-transition-group(*) { animation-duration: 0s; }
-html[data-vt='fwd']::view-transition-old(root), html[data-vt='fwd']::view-transition-new(root),
-html[data-vt='back']::view-transition-old(root), html[data-vt='back']::view-transition-new(root) { animation: none; }
-html[data-vt='fade']::view-transition-old(root) { animation: vtOut 0.16s ease-in both; }
-html[data-vt='fade']::view-transition-new(root) { animation: vtIn 0.28s var(--ease) both; }
+html[data-vt]::view-transition-group(*) { animation-duration: 0s; }
+html[data-vt]::view-transition-old(root), html[data-vt]::view-transition-new(root) { animation: none; }
+html[data-vt='fade']::view-transition-old(root) { animation: vtFadeOut 0.16s ease-in both; }
+html[data-vt='fade']::view-transition-new(root) { animation: vtFadeIn 0.28s var(--ease) both; }
+@keyframes vtFadeOut { to { opacity: 0; } }
+@keyframes vtFadeIn { from { opacity: 0; } }
+::view-transition-old(page), ::view-transition-new(page) { mix-blend-mode: normal; }
+
+/* 1. Slide (default): old drifts away, new slides in from the side you are heading to */
 ::view-transition-old(page) { animation: vtOut 0.12s ease-in both; }
 ::view-transition-new(page) { animation: vtIn 0.4s var(--ease) 0.06s both; }
 html[data-vt='fwd']::view-transition-old(page) { --vt-x: -22px; }
@@ -47,6 +52,37 @@ html[data-vt='back']::view-transition-old(page) { --vt-x: 22px; }
 html[data-vt='back']::view-transition-new(page) { --vt-x: -36px; }
 @keyframes vtOut { to { opacity: 0; transform: translateX(var(--vt-x, 0)); } }
 @keyframes vtIn { from { opacity: 0; transform: translateX(var(--vt-x, 0)); } }
+
+/* 2. Fade: a calm dissolve with a hint of scale, no direction */
+html[data-vts='fade']::view-transition-old(page) { animation: vtZoomOut 0.14s ease-in both; }
+html[data-vts='fade']::view-transition-new(page) { animation: vtZoomIn 0.34s var(--ease) 0.08s both; }
+@keyframes vtZoomOut { to { opacity: 0; transform: scale(0.985); } }
+@keyframes vtZoomIn { from { opacity: 0; transform: scale(0.985); } }
+
+/* 3. Rise: the new page lifts up from below while the old one sinks away */
+html[data-vts='rise']::view-transition-old(page) { animation: vtSink 0.16s ease-in both; }
+html[data-vts='rise']::view-transition-new(page) { animation: vtRise 0.5s var(--ease) 0.06s both; }
+@keyframes vtSink { to { opacity: 0; transform: translateY(10px) scale(0.99); } }
+@keyframes vtRise { from { opacity: 0; transform: translateY(34px); } }
+
+/* 4. Push: like a phone's stack. The new page covers the old one, which dims and shifts back */
+html[data-vts='push']::view-transition-old(page) { animation: vtPushOld 0.45s var(--ease) both; }
+html[data-vts='push']::view-transition-new(page) { animation: vtPushNew 0.45s var(--ease) both; }
+html[data-vts='push'][data-vt='fwd']::view-transition-new(page) { --vt-from: 100%; z-index: 2; }
+html[data-vts='push'][data-vt='fwd']::view-transition-old(page) { --vt-to: -28%; }
+html[data-vts='push'][data-vt='back']::view-transition-new(page) { --vt-from: -28%; }
+html[data-vts='push'][data-vt='back']::view-transition-old(page) { --vt-to: 100%; z-index: 2; }
+@keyframes vtPushOld { to { transform: translateX(var(--vt-to, 0)); opacity: 0.35; } }
+@keyframes vtPushNew { from { transform: translateX(var(--vt-from, 0)); opacity: 0.35; } }
+
+/* 5. Wipe: a clean edge reveals the new page in the direction you are heading */
+html[data-vts='wipe']::view-transition-old(page) { animation: vtHold 0.45s linear both; }
+html[data-vts='wipe']::view-transition-new(page) { animation: vtWipe 0.5s var(--ease) both; clip-path: inset(0); }
+html[data-vts='wipe'][data-vt='back']::view-transition-new(page) { animation-name: vtWipeBack; }
+@keyframes vtHold { to { opacity: 0.4; } }
+@keyframes vtWipe { from { clip-path: inset(0 0 0 100%); } }
+@keyframes vtWipeBack { from { clip-path: inset(0 100% 0 0); } }
+
 /* with view transitions the old entrance animations would fight them */
 @supports (view-transition-name: page) {
   .ob-stage, .hm-main { animation: none; }
