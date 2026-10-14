@@ -4,7 +4,7 @@
 .ch-empty { margin: 8px 4px; color: var(--ink-muted); font: 500 18px/1.5 var(--text); max-width: none; }
 .ch-list { list-style: none; margin: 0; padding: 0; }
 .ch-list li + li { border-top: 1px solid rgba(255, 255, 255, 0.07); }
-.ch-row { display: grid; grid-template-columns: 56px 1fr auto; align-items: center; gap: 14px; width: 100%; min-height: 84px; padding: 12px 4px; border: 0; background: none; color: var(--ink); text-align: left; }
+.ch-row { position: relative; display: grid; grid-template-columns: 56px 1fr auto; align-items: center; gap: 14px; width: 100%; min-height: 84px; padding: 12px 4px; border: 0; background: none; color: var(--ink); text-align: left; }
 .ch-av { border-radius: 50%; object-fit: cover; flex: none; background: var(--surface); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08); }
 .ch-init { display: grid; place-items: center; font-family: var(--display); font-weight: 900; font-stretch: 68%; color: var(--gold); }
 .ch-mid { display: grid; gap: 3px; min-width: 0; }
@@ -70,3 +70,13 @@
 .th-box button { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border: 0; border-radius: 50%; background: var(--gold); color: var(--ground); transition: opacity 0.2s, transform 0.2s var(--ease); }
 .th-box button:active { transform: scale(0.94); }
 .th-box button[aria-disabled='true'] { opacity: 0.3; }
+
+/* Hover only hints (a faint wash, only where there is a real pointer); the open chat is the one that is clearly marked. */
+.ch-row { transition: background-color 0.2s var(--ease), transform 0.15s var(--ease); }
+.ch-row:active { background: rgba(255, 255, 255, 0.05); }
+@media (hover: hover) { .ch-row:hover:not(.on) { background: rgba(255, 255, 255, 0.04); } }
+@media (min-width: 900px) {
+  .ch-row.on { background: rgba(255, 194, 74, 0.09); }
+  .ch-row.on::before { content: ''; position: absolute; left: 0; top: 22px; bottom: 22px; width: 3px; border-radius: 3px; background: var(--gold); }
+  .ch-row.on .ch-mid b { color: var(--gold); }
+}
