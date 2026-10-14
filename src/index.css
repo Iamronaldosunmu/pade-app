@@ -29,3 +29,25 @@ h1, h2, p { margin: 0; text-wrap: balance; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+/* Page transitions (see lib/transition.ts). Only the page itself moves; the nav stays put. */
+html[data-vt='fwd'] .stage, html[data-vt='back'] .stage,
+html[data-vt='fwd'] .ob-stage, html[data-vt='back'] .ob-stage { view-transition-name: page; }
+html[data-vt='fwd'] .tabs, html[data-vt='back'] .tabs { view-transition-name: nav; }
+html[data-vt='fwd']::view-transition-group(*), html[data-vt='back']::view-transition-group(*) { animation-duration: 0s; }
+html[data-vt='fwd']::view-transition-old(root), html[data-vt='fwd']::view-transition-new(root),
+html[data-vt='back']::view-transition-old(root), html[data-vt='back']::view-transition-new(root) { animation: none; }
+html[data-vt='fade']::view-transition-old(root) { animation: vtOut 0.16s ease-in both; }
+html[data-vt='fade']::view-transition-new(root) { animation: vtIn 0.28s var(--ease) both; }
+::view-transition-old(page) { animation: vtOut 0.12s ease-in both; }
+::view-transition-new(page) { animation: vtIn 0.4s var(--ease) 0.06s both; }
+html[data-vt='fwd']::view-transition-old(page) { --vt-x: -22px; }
+html[data-vt='fwd']::view-transition-new(page) { --vt-x: 36px; }
+html[data-vt='back']::view-transition-old(page) { --vt-x: 22px; }
+html[data-vt='back']::view-transition-new(page) { --vt-x: -36px; }
+@keyframes vtOut { to { opacity: 0; transform: translateX(var(--vt-x, 0)); } }
+@keyframes vtIn { from { opacity: 0; transform: translateX(var(--vt-x, 0)); } }
+/* with view transitions the old entrance animations would fight them */
+@supports (view-transition-name: page) {
+  .ob-stage, .hm-main { animation: none; }
+}

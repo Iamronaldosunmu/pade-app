@@ -1,3 +1,4 @@
+import { navigate } from '../lib/transition'
 import { useCallback, useEffect, useState } from 'react'
 import { remoteEnabled } from '../lib/supabase'
 import { fetchPeople, SAMPLE_PEOPLE, type Person } from '../people/people'
@@ -46,7 +47,7 @@ export function Chats({ userId, openWith, onOpenChange, onUnread, onSeeFridays }
         <ul className="ch-list">
           {sorted.map((c) => (
             <li key={c.personId}>
-              <button type="button" className={`ch-row${c.unread ? ' new' : ''}${c.personId === open ? ' on' : ''}`} aria-current={c.personId === open ? 'true' : undefined} onClick={() => setOpen(c.personId)}>
+              <button type="button" className={`ch-row${c.unread ? ' new' : ''}${c.personId === open ? ' on' : ''}`} aria-current={c.personId === open ? 'true' : undefined} onClick={() => navigate('drill-in', () => setOpen(c.personId))}>
                 <Avatar c={c} />
                 <span className="ch-mid">
                   <b>{c.name}</b>
@@ -63,7 +64,7 @@ export function Chats({ userId, openWith, onOpenChange, onUnread, onSeeFridays }
       </main>
       <div className="th-pane">
         {person ? (
-          <Thread key={person.personId} me={userId} person={person} info={people.find((x) => x.id === person.personId)} onBack={() => { setOpen(null); load() }} onRead={() => setChats((l) => l && l.map((c) => (c.personId === open ? { ...c, unread: 0 } : c)))} onSent={(body) => setChats((l) => l && l.map((c) => (c.personId === open ? { ...c, lastBody: body, lastAt: new Date().toISOString(), lastMine: true } : c)))} />
+          <Thread key={person.personId} me={userId} person={person} info={people.find((x) => x.id === person.personId)} onBack={() => { navigate('drill-out', () => setOpen(null)); load() }} onRead={() => setChats((l) => l && l.map((c) => (c.personId === open ? { ...c, unread: 0 } : c)))} onSent={(body) => setChats((l) => l && l.map((c) => (c.personId === open ? { ...c, lastBody: body, lastAt: new Date().toISOString(), lastMine: true } : c)))} />
         ) : (
           <p className="th-none">Pick a conversation to start talking.</p>
         )}

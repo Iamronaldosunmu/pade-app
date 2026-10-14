@@ -1,3 +1,4 @@
+import { navigate } from '../lib/transition'
 import { useEffect, useRef, useState } from 'react'
 import { AREAS, INTENTS, MAX_TOPICS, PACES, TAKE_IDEAS, TOPICS } from './data'
 import { sendEmailLink, signInWithGoogle, validEmail, type Provider } from './auth'
@@ -25,8 +26,8 @@ export function Onboarding({ edit = null, onExit, onHome }: { edit?: StepId | nu
   const step: StepId = edit ?? STEPS[i]
   const advance = () => { if (edit) onExit?.(); else next() }
   const set = (patch: Partial<Profile>) => setP((x) => ({ ...x, ...patch }))
-  const next = () => { setI((n) => Math.min(n + 1, STEPS.length - 1)) }
-  const back = () => { if (edit) onExit?.(); else setI((n) => Math.max(0, n - 1)) }
+  const next = () => navigate('fwd', () => setI((n) => Math.min(n + 1, STEPS.length - 1)))
+  const back = () => { if (edit) onExit?.(); else navigate('back', () => setI((n) => Math.max(0, n - 1))) }
   const stage = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
