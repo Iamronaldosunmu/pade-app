@@ -31,6 +31,7 @@ beforeAll(async () => {
     grant usage on schema auth to authenticated;
   `)
   await db.exec(readFileSync(new URL('../../supabase/migrations/0001_init.sql', import.meta.url), 'utf8'))
+  await db.exec(readFileSync(new URL('../../supabase/migrations/0002_chats.sql', import.meta.url), 'utf8'))
   await db.exec(`
     insert into auth.users values ('${A}'), ('${B}'), ('${C}');
     ${profile(A, 'Ada', 'ada.k')}; ${profile(B, 'Bayo', 'bayo_x')}; ${profile(C, 'Chi', 'chi.c')};
