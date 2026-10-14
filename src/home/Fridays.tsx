@@ -74,13 +74,10 @@ export function Fridays({ profile, userId = null }: { profile: Profile; userId?:
     <div className="hm">
       <Top />
       <main className="hm-main">
-        <h1 className="hm-hi">Hi, {profile.name}.</h1>
-
-        <section className={`hm-card hm-next${going ? '' : ' off'}`} aria-labelledby="hm-next-h">
-          <p className="hm-eyebrow" id="hm-next-h">{live ? 'Happening now' : 'Next Friday'}</p>
-          <p className="hm-when">{sessionLabel(sess.start)}, Lagos</p>
+                <section className={`hm-next${going ? '' : ' off'}`} aria-labelledby="hm-next-h">
+          <h1 className="hm-when" id="hm-next-h"><span>{live ? `Doors are open, ${profile.name}` : `Next up, ${profile.name}`}</span>{sessionLabel(sess.start)}, Lagos</h1>
           {live ? (
-            <p className="hm-live"><i aria-hidden="true" />Doors are open</p>
+            <p className="hm-live"><i aria-hidden="true" />Come in and meet someone</p>
           ) : (
             <div className="hm-clock" role="timer" aria-label="Time until the next Friday">
               {([[clock.d, 'days'], [clock.h, 'hrs'], [clock.m, 'min'], [clock.s, 'sec']] as const).map(([n, l]) => (
@@ -93,7 +90,7 @@ export function Fridays({ profile, userId = null }: { profile: Profile; userId?:
           </button>
         </section>
 
-        <section className="hm-card" aria-labelledby="hm-up-h">
+        <section className="hm-sec" aria-labelledby="hm-up-h">
           <h2 className="hm-h" id="hm-up-h">Coming up</h2>
           <ul className="hm-up">
             {later.map((d) => <Upcoming key={d.toISOString()} start={d} userId={userId} />)}
@@ -101,8 +98,8 @@ export function Fridays({ profile, userId = null }: { profile: Profile; userId?:
           <a className="hm-cal" href={googleCalendarUrl(sess.start)} target="_blank" rel="noopener noreferrer">Add every Friday to Google Calendar</a>
         </section>
 
-        <section className="hm-card" aria-labelledby="hm-fri-h">
-          <h2 className="hm-h" id="hm-fri-h">Before Friday</h2>
+        <section className="hm-sec" aria-labelledby="hm-fri-h">
+          <h2 className="hm-h" id="hm-fri-h">Before the doors open</h2>
           <ul className="hm-tips">
             <li>Find somewhere quiet, with decent signal.</li>
             <li>Charge your phone, or plug it in.</li>

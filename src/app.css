@@ -2,3 +2,7 @@
 .wm i { font-style: normal; color: var(--gold); }
 .app-onb { height: 100%; }
 .app-onb[hidden] { display: none; }
+
+/* A touch of film grain over the ground, so large dark areas feel printed rather than flat. */
+body::after { content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 1; opacity: 0.05; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>"); }
+.tabs { z-index: 5; }

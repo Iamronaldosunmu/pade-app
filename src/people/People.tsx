@@ -3,7 +3,7 @@ import { remoteEnabled } from '../lib/supabase'
 import { contactUrl, fetchPeople, NETWORK, SAMPLE_PEOPLE, type Person } from './people'
 import './people.css'
 
-const met = (iso: string) => new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Africa/Lagos' })
+const met = (iso: string) => new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'Africa/Lagos' })
 
 export function People() {
   const [list, setList] = useState<Person[] | null>(remoteEnabled ? null : SAMPLE_PEOPLE)
@@ -36,7 +36,7 @@ export function People() {
             </div>
             {x.takes[0] && <p className="pp-take">“{x.takes[0]}”</p>}
             <div className="pp-foot">
-              <span className="pp-date">Met {met(x.metOn)}</span>
+              <span className="pp-date">{met(x.metOn)}</span>
               <a className="pp-say" href={contactUrl(x.contactKind, x.handle)} target="_blank" rel="noopener noreferrer" aria-label={`Message ${x.name} on ${NETWORK[x.contactKind]}`}>
                 {NETWORK[x.contactKind]} <b aria-hidden="true">@{x.handle}</b>
               </a>

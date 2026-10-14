@@ -25,13 +25,13 @@ export function Me({ profile, onEdit, onSignOut }: { profile: Profile; onEdit: (
         <span className="wm" aria-label="Pàdé">P<i>à</i>d<i>é</i></span>
       </header>
       <main className="hm-main">
-        <h1 className="hm-hi">Me</h1>
+        
 
         <section className="hm-ticket" aria-label="Your ticket">
           <Ticket profile={profile} when={sess.start} full printed />
         </section>
 
-        <section className="hm-card" aria-labelledby="hm-det-h">
+        <section className="hm-sec" aria-labelledby="hm-det-h">
           <h2 className="hm-h" id="hm-det-h">Your details</h2>
           <ul className="hm-rows">
             {rows.map((r) => (
