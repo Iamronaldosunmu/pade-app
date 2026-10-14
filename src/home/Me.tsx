@@ -49,13 +49,20 @@ export function Me({ profile, onEdit, onSignOut }: { profile: Profile; onEdit: (
       <header className="hm-top">
         <span className="wm" aria-label="Pàdé">P<i>à</i>d<i>é</i></span>
       </header>
-      <main className="hm-main">
+      <main className="hm-main me">
         
 
+        <div className="me-side">
         <section className="hm-ticket" aria-label="Your ticket">
           <Ticket profile={profile} when={sess.start} full printed />
         </section>
 
+        <nav className="hm-links" aria-label="More">
+          <button type="button" onClick={() => onEdit('ticket')}>Share my ticket</button>
+          <button type="button" onClick={onSignOut}>Sign out</button>
+        </nav>
+        </div>
+        <div className="me-body">
         <section className="hm-sec" aria-labelledby="hm-det-h">
           <h2 className="hm-h" id="hm-det-h">Your details</h2>
           <Rows list={rows} onEdit={onEdit} />
@@ -67,10 +74,7 @@ export function Me({ profile, onEdit, onSignOut }: { profile: Profile; onEdit: (
           <Rows list={answers} onEdit={onEdit} />
         </section>
 
-        <nav className="hm-links" aria-label="More">
-          <button type="button" onClick={() => onEdit('ticket')}>Share my ticket</button>
-          <button type="button" onClick={onSignOut}>Sign out</button>
-        </nav>
+        </div>
       </main>
     </div>
   )

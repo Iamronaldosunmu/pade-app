@@ -78,12 +78,15 @@ export default function App() {
       {view.kind === 'edit' && <Onboarding key={view.step} edit={view.step} onExit={home} onHome={home} />}
       {signedUp ? (
         <>
+          <div className="stage">
           {tab === 'fridays' && <Fridays profile={signedUp.profile} userId={uid} />}
           {tab === 'people' && <People onSeeFridays={() => setTab('fridays')} onMessage={(id) => { setChatWith(id); setTab('chats') }} />}
           {tab === 'chats' && <Chats key={chatWith ?? 'inbox'} userId={uid} openWith={chatWith} onOpenChange={setInThread} onUnread={setUnread} onSeeFridays={() => setTab('fridays')} />}
           {tab === 'me' && <Me profile={signedUp.profile} onEdit={(step) => setView({ kind: 'edit', step })} onSignOut={() => { void signOutRemote(); clearProgress(); setTab('fridays'); setRound((n) => n + 1); setView({ kind: 'onboarding' }) }} />}
-          <nav className="tabs" aria-label="Main" hidden={tab === 'chats' && inThread}>
-            <span className="tabs-pill" aria-hidden="true" style={{ transform: `translateX(${TABS.findIndex((t) => t.id === tab) * 100}%)` }} />
+        </div>
+          <nav className={`tabs${tab === 'chats' && inThread ? ' thread' : ''}`} aria-label="Main">
+            <span className="rail-wm wm" aria-hidden="true">P<i>à</i>d<i>é</i></span>
+            <span className="tabs-pill" aria-hidden="true" style={{ '--i': TABS.findIndex((t) => t.id === tab) } as React.CSSProperties} />
             {TABS.map((t) => (
               <button key={t.id} type="button" aria-current={tab === t.id ? 'page' : undefined} onClick={() => { if (t.id === 'chats') setChatWith(null); setTab(t.id) }}>
                 <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{t.icon}</svg>

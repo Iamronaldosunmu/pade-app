@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { fetchGoing, saveGoing } from '../db/profiles'
+import { Ticket } from '../onboarding/Ticket'
 import { currentSession, googleCalendarUrl, sessionLabel } from '../onboarding/session-time'
 import type { Profile } from '../onboarding/types'
 import './home.css'
@@ -73,7 +74,7 @@ export function Fridays({ profile, userId = null }: { profile: Profile; userId?:
   return (
     <div className="hm">
       <Top />
-      <main className="hm-main">
+      <main className="hm-main fr">
                 <section className={`hm-next${going ? '' : ' off'}`} aria-labelledby="hm-next-h">
           <h1 className="hm-when" id="hm-next-h"><span>{live ? `Doors are open, ${profile.name}` : `Next up, ${profile.name}`}</span>{sessionLabel(sess.start)}, Lagos</h1>
           {live ? (
@@ -88,6 +89,10 @@ export function Fridays({ profile, userId = null }: { profile: Profile; userId?:
           <button type="button" className="hm-switch" role="switch" aria-checked={going} onClick={flip}>
             <span>{going ? 'I am coming' : 'Skipping this one'}</span><i aria-hidden="true" />
           </button>
+        </section>
+
+        <section className="fr-ticket" aria-label="Your ticket">
+          <Ticket profile={profile} when={sess.start} full printed />
         </section>
 
         <section className="hm-sec" aria-labelledby="hm-up-h">

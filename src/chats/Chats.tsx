@@ -31,37 +31,42 @@ export function Chats({ userId, openWith, onOpenChange, onUnread, onSeeFridays }
   useEffect(() => (userId ? listenForMessages(userId, () => load()) : undefined), [userId, load])
 
   const person = chats?.find((c) => c.personId === open)
-  if (open && person) {
-    return <Thread me={userId} person={person} onBack={() => { setOpen(null); load() }} onRead={() => setChats((l) => l && l.map((c) => (c.personId === open ? { ...c, unread: 0 } : c)))} onSent={(body) => setChats((l) => l && l.map((c) => (c.personId === open ? { ...c, lastBody: body, lastAt: new Date().toISOString(), lastMine: true } : c)))} />
-  }
-
   const sorted = [...(chats ?? [])].sort((a, b) => (b.lastAt || '').localeCompare(a.lastAt || ''))
   return (
-    <main className="ch">
-      <h1 className="ch-h">Chats</h1>
-      {!remoteEnabled && <p className="ch-note">Sample conversations, so you can see how this will look.</p>}
-      {failed && <p className="ch-empty" role="alert">Could not load your chats. Check your connection and try again.</p>}
-      {chats === null && !failed && <p className="ch-empty" aria-busy="true">Loading…</p>}
-      {chats?.length === 0 && <p className="ch-empty">No chats yet. After a Friday, the people you both wanted to keep talking to show up here.</p>}
-      {chats?.length === 0 && <button type="button" className="empty-cta" onClick={onSeeFridays}>See the Fridays</button>}
-      <ul className="ch-list">
-        {sorted.map((c) => (
-          <li key={c.personId}>
-            <button type="button" className={`ch-row${c.unread ? ' new' : ''}`} onClick={() => setOpen(c.personId)}>
-              <Avatar c={c} />
-              <span className="ch-mid">
-                <b>{c.name}</b>
-                <span className="ch-prev">{c.lastBody ? `${c.lastMine ? 'You: ' : ''}${c.lastBody}` : 'Say hello'}</span>
-              </span>
-              <span className="ch-meta">
-                <time>{whenLabel(c.lastAt)}</time>
-                {c.unread > 0 && <i className="ch-dot" aria-label={`${c.unread} unread`} />}
-              </span>
-            </button>
-          </li>
-        ))}
-      </ul>
-    </main>
+    <div className={`ch-wrap${person ? ' open' : ''}`}>
+      <main className="ch">
+        <h1 className="ch-h">Chats</h1>
+        {!remoteEnabled && <p className="ch-note">Sample conversations, so you can see how this will look.</p>}
+        {failed && <p className="ch-empty" role="alert">Could not load your chats. Check your connection and try again.</p>}
+        {chats === null && !failed && <p className="ch-empty" aria-busy="true">Loading…</p>}
+        {chats?.length === 0 && <p className="ch-empty">No chats yet. After a Friday, the people you both wanted to keep talking to show up here.</p>}
+        {chats?.length === 0 && <button type="button" className="empty-cta" onClick={onSeeFridays}>See the Fridays</button>}
+        <ul className="ch-list">
+          {sorted.map((c) => (
+            <li key={c.personId}>
+              <button type="button" className={`ch-row${c.unread ? ' new' : ''}${c.personId === open ? ' on' : ''}`} aria-current={c.personId === open ? 'true' : undefined} onClick={() => setOpen(c.personId)}>
+                <Avatar c={c} />
+                <span className="ch-mid">
+                  <b>{c.name}</b>
+                  <span className="ch-prev">{c.lastBody ? `${c.lastMine ? 'You: ' : ''}${c.lastBody}` : 'Say hello'}</span>
+                </span>
+                <span className="ch-meta">
+                  <time>{whenLabel(c.lastAt)}</time>
+                  {c.unread > 0 && <i className="ch-dot" aria-label={`${c.unread} unread`} />}
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      </main>
+      <div className="th-pane">
+        {person ? (
+          <Thread key={person.personId} me={userId} person={person} onBack={() => { setOpen(null); load() }} onRead={() => setChats((l) => l && l.map((c) => (c.personId === open ? { ...c, unread: 0 } : c)))} onSent={(body) => setChats((l) => l && l.map((c) => (c.personId === open ? { ...c, lastBody: body, lastAt: new Date().toISOString(), lastMine: true } : c)))} />
+        ) : (
+          <p className="th-none">Pick a conversation to start talking.</p>
+        )}
+      </div>
+    </div>
   )
 }
 
