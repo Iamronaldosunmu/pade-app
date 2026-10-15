@@ -43,9 +43,8 @@ html[data-vt='fade']::view-transition-new(root) { animation: vtIn 0.26s ease-out
 @keyframes vtIn { from { opacity: 0; } }
 
 html[data-vt='pane'] .th-pane { view-transition-name: pane; }
-html[data-vt='pane']::view-transition-old(pane) { animation: vtOut 0.12s ease-in both; }
-html[data-vt='pane']::view-transition-new(pane) { animation: vtPaneIn 0.32s var(--ease) 0.08s both; }
-@keyframes vtPaneIn { from { opacity: 0; transform: translateY(8px); } }
+html[data-vt='pane']::view-transition-old(pane) { animation: vtOut 0.14s ease-in both; }
+html[data-vt='pane']::view-transition-new(pane) { animation: vtIn 0.26s ease-out 0.12s both; }
 
 /* with view transitions the old entrance animations would fight them */
 @supports (view-transition-name: page) {
