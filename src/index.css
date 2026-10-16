@@ -33,7 +33,11 @@ h1, h2, p { margin: 0; text-wrap: balance; }
 /* Page transitions (see lib/transition.ts): the page fades out, then the next fades in. The nav stays put. */
 html[data-vt='page'] .stage, html[data-vt='page'] .ob-stage { view-transition-name: page; }
 html[data-vt='page'] .tabs { view-transition-name: nav; }
-html[data-vt]::view-transition-group(*) { animation-duration: 0s; }
+/* Things that appear on both screens keep their place instead of fading with the page */
+@media (max-width: 899px) { html[data-vt='page'] .hm-top .wm { view-transition-name: wordmark; } }
+@media (min-width: 900px) { html[data-vt='page'] .fr-ticket, html[data-vt='page'] .hm-ticket { view-transition-name: ticket; } }
+html[data-vt]::view-transition-group(*) { animation-duration: 0.3s; animation-timing-function: var(--ease); }
+html[data-vt='pane']::view-transition-group(pane) { animation-duration: 0s; }
 html[data-vt]::view-transition-old(root), html[data-vt]::view-transition-new(root) { animation: none; }
 html[data-vt='fade']::view-transition-old(root) { animation: vtOut 0.14s ease-in both; }
 html[data-vt='fade']::view-transition-new(root) { animation: vtIn 0.26s ease-out both; }
@@ -49,4 +53,5 @@ html[data-vt='pane']::view-transition-new(pane) { animation: vtIn 0.26s ease-out
 /* with view transitions the old entrance animations would fight them */
 @supports (view-transition-name: page) {
   .ob-stage, .hm-main { animation: none; }
+  .hm-ticket .ticket.printed, .fr-ticket .ticket.printed { animation: none; }
 }
