@@ -17,7 +17,7 @@ export function People({ onMessage, onSeeFridays }: { onMessage: (personId: stri
 
   return (
     <main className="pp">
-      <h1 className="pp-h">People you have met</h1>
+      <h1 className="pp-h">People you connected with</h1>
       {!remoteEnabled && <p className="pp-sample">Sample people, so you can see how this will look.</p>}
       {failed && <p className="pp-empty" role="alert">Could not load your people. Check your connection and try again.</p>}
       {list === null && !failed && <p className="pp-empty" aria-busy="true">Loading…</p>}

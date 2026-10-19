@@ -109,7 +109,7 @@ export function Thread({ me, person, info, onBack, onRead, onSent }: Props) {
         <Avatar c={person} size={46} />
         <div className="th-who">
           <h1>{person.name}</h1>
-          {info && <p>Met {metOn}</p>}
+          {info && <p>Connected {metOn}</p>}
         </div>
         {info && (
           <a className="th-net" href={contactUrl(info.contactKind, info.handle)} target="_blank" rel="noopener noreferrer" aria-label={`Open ${person.name} on ${NETWORK[info.contactKind]}`}>{NETWORK[info.contactKind]}</a>
@@ -138,7 +138,7 @@ export function Thread({ me, person, info, onBack, onRead, onSent }: Props) {
           <h2>{person.name}{info && <span>{info.age}</span>}</h2>
           {info && <p className="th-line">{info.work} · {info.area}</p>}
           {info?.takes[0] && <p className="th-take">“{info.takes[0]}”</p>}
-          {info && <p className="th-met">You met on {metOn}</p>}
+          {info && <p className="th-met">You connected on {metOn}</p>}
         </div>
         {rows.map((r) =>
           r.kind === 'day' ? (
